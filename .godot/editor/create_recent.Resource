@@ -1,0 +1,5 @@
+Resource
+Shader
+ShaderMaterial
+Theme
+CanvasItemMaterial

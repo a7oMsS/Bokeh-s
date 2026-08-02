@@ -1,0 +1,34 @@
+[gd_resource type="Theme" format=3 uid="uid://da8clmu3p12hv"]
+
+[ext_resource type="FontFile" uid="uid://bxjehvbrs72ym" path="res://assets/fuentes/SpecialGothic-Regular.ttf" id="1_aixe3"]
+
+[sub_resource type="FontVariation" id="FontVariation_aixe3"]
+base_font = ExtResource("1_aixe3")
+variation_embolden = 1.33
+variation_transform = Transform2D(1, 0, 0, 1.3, 0, 0)
+spacing_glyph = 8
+baseline_offset = 0.095
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_llsr5"]
+bg_color = Color(0.2585664, 0.25856644, 0.2585663, 0.35686275)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aixe3"]
+bg_color = Color(0.87, 0.48734495, 0.07829998, 0.49411765)
+border_width_right = 11
+border_color = Color(0.8537233, 0.8537233, 0.8537233, 0.73333335)
+corner_radius_top_left = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0.97, 0.7275, 0, 0.27450982)
+shadow_size = 13
+anti_aliasing_size = 1.73
+
+[resource]
+Label/colors/font_color = Color(1.4643909, 1.4643909, 1.4643909, 0.5294118)
+Label/font_sizes/font_size = 27
+Label/fonts/font = SubResource("FontVariation_aixe3")
+ProgressBar/styles/background = SubResource("StyleBoxFlat_llsr5")
+ProgressBar/styles/fill = SubResource("StyleBoxFlat_aixe3")

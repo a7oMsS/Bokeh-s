@@ -1,0 +1,65 @@
+[gd_scene load_steps=6 format=3 uid="uid://vi06ryyrhsih"]
+
+[ext_resource type="Script" uid="uid://ds6cmm7le5b1b" path="res://script/ui/main.gd" id="1_q753v"]
+[ext_resource type="Script" uid="uid://xuin6gkvk3wd" path="res://script/figuras/FiguraManager.gd" id="2_0kxa1"]
+[ext_resource type="PackedScene" uid="uid://dvip4th6ymc8s" path="res://escenas/ux/bg.tscn" id="2_lyxkq"]
+[ext_resource type="Script" uid="uid://bnyejtfxlmd4g" path="res://script/ui/score_manager.gd" id="3_ycoim"]
+
+[sub_resource type="Environment" id="Environment_7o4h5"]
+background_mode = 3
+tonemap_mode = 3
+glow_enabled = true
+glow_bloom = 0.1
+glow_hdr_threshold = 0.8
+glow_hdr_scale = 0.4
+glow_hdr_luminance_cap = 2.0
+fog_enabled = true
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_q753v")
+
+[node name="Managers" type="Node" parent="."]
+
+[node name="FiguraManager" type="Node" parent="Managers"]
+script = ExtResource("2_0kxa1")
+
+[node name="scoreManager" type="Node" parent="Managers"]
+script = ExtResource("3_ycoim")
+
+[node name="ClicArea" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(1, 1, 1, 0)
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="ClicArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="ClicArea/SubViewportContainer"]
+transparent_bg = true
+handle_input_locally = false
+use_hdr_2d = true
+size = Vector2i(1280, 720)
+render_target_update_mode = 4
+
+[node name="BG" parent="ClicArea/SubViewportContainer/SubViewport" instance=ExtResource("2_lyxkq")]
+mouse_default_cursor_shape = 3
+
+[node name="Figures" type="Node2D" parent="ClicArea/SubViewportContainer/SubViewport"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="ClicArea/SubViewportContainer/SubViewport"]
+environment = SubResource("Environment_7o4h5")

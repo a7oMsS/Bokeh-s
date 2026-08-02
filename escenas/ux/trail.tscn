@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://cyg735dbkbw1q"]
+
+[ext_resource type="Script" uid="uid://c503uh1bdrwsw" path="res://escenas/ux/trail.gd" id="1_f5a1n"]
+
+[sub_resource type="Curve" id="Curve_f5a1n"]
+_data = [Vector2(0.0113636255, 0.68680096), 0.0, 1.3326448, 0, 0, Vector2(1, 1), -0.9503973, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_f5a1n"]
+colors = PackedColorArray(1, 1, 1, 0.40784314, 1, 1, 1, 1)
+
+[sub_resource type="Gradient" id="Gradient_qb58f"]
+colors = PackedColorArray(13.097298, 13.097298, 13.097298, 1, 0.82, 0.82, 0.82, 0.5921569)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_ei0ig"]
+gradient = SubResource("Gradient_qb58f")
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0, 1)
+
+[node name="Trail" type="Line2D" unique_id=2081527438]
+width = 50.0
+width_curve = SubResource("Curve_f5a1n")
+gradient = SubResource("Gradient_f5a1n")
+texture = SubResource("GradientTexture2D_ei0ig")
+texture_mode = 2
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+round_precision = 20
+antialiased = true
+script = ExtResource("1_f5a1n")
