@@ -5,10 +5,10 @@ signal ritual_resolved(data: Dictionary)
 
 var active_ritual: BaseRitual = null
 
-@export var condense_ritual_scene: PackedScene = preload("res://escenas/ux/condesation_fx.tscn")
+@export var condense_ritual_scene: PackedScene
 
 # ================================================================
-# INICIO DE RITUALES (llamados desde InputRitualManager)
+# 1. INICIO — crear y conectar ritual
 # ================================================================
 
 func start_condense(position: Vector2) -> void:
@@ -21,33 +21,34 @@ func start_condense(position: Vector2) -> void:
 
 
 # ================================================================
-# UPDATE DURANTE EL GESTO
+# 2. DURANTE EL GESTO — actualizar visuales
 # ================================================================
 
-func on_condense_held(_position: Vector2, circular_progress: float, stability: float) -> void:
+func on_condense_held(_position: Vector2, spin_ratio: float) -> void:
 	if active_ritual and active_ritual.ritual_type == "condense":
-		active_ritual.update(circular_progress, stability)
+		active_ritual.update(spin_ratio)
+
 
 # ================================================================
-# GESTO FINAL / EMPUJÓN
+# 3. RESOLUCIÓN — mandar señal para el spawn
 # ================================================================
 
-func on_condense_pushed(_position: Vector2) -> void:
+func on_condense_resolved(_position: Vector2, spin_ratio: float) -> void:
 	if active_ritual and active_ritual.ritual_type == "condense":
-		active_ritual.push_final()  
+		active_ritual.resolve(spin_ratio)
 
 
 # ================================================================
-# CANCELACIÓN
+# 4. CANCELACIÓN — mitigar ritual
 # ================================================================
 
 func on_ritual_cancelled() -> void:
 	if active_ritual:
-		active_ritual.resolve("cancel")
+		active_ritual.cancel()
 
 
 # ================================================================
-# FIN DEL RITUAL
+# FIN DEL RITUAL (siempre, sea éxito o cancelado)
 # ================================================================
 
 func _on_ritual_finished(data: Dictionary) -> void:

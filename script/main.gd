@@ -21,7 +21,7 @@ func _ready():
 	# Input → Ritual
 	input_ritual_manager.condense_started.connect(ritual_controller.start_condense)
 	input_ritual_manager.condense_held.connect(ritual_controller.on_condense_held)
-	input_ritual_manager.condense_pushed.connect(ritual_controller.on_condense_pushed)
+	input_ritual_manager.condense_resolved.connect(ritual_controller.on_condense_resolved)
 	
 	# Cancel
 	input_ritual_manager.ritual_cancelled.connect(ritual_controller.on_ritual_cancelled)

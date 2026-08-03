@@ -21,6 +21,20 @@ var estilos = ["solido"]
 var tamanos = ["Grandes"]
 var personalidades = ["parpadeo","vibracion"]
 
+# ======== Bonus por calidad del gesto (spin_ratio, 0-1) ========
+const QUALITY_SIZE_BONUS_MAX := 0.35     # hasta +35% de tamaño con gesto perfecto
+const QUALITY_BRIGHTEN_MAX := 0.25       # hasta +25% de luminosidad de color
+
+# ======== Profundidad dinámica ========
+# Toda figura nace enfocada (Mid) y luego deriva hacia Near o Far.
+const DEPTH_FOCUS_CHANCE_MIN := 0.33     # sin giro: 33% quedarse enfocada, 33/33 Near/Far
+const DEPTH_FOCUS_CHANCE_MAX := 0.66     # con giro: 66%
+const DEPTH_HOLD_MIN := 1.5              # segundos mínimos enfocada antes de derivar
+const DEPTH_HOLD_MAX := 4.0              # segundos máximos (más con mejor quality)
+const DEPTH_DRIFT_MIN := 3.0             # duración mínima de la transición Mid → target
+const DEPTH_DRIFT_MAX := 6.0             # duración máxima
+
+
 # ---------------- Métodos de desbloqueo ----------------
 func enable_forma(nombre: String) -> void:
 	if todas_formas.has(nombre) and not formas.has(nombre):
@@ -86,7 +100,6 @@ func get_color_similar(base_color: Color) -> Color:
 	var h = base_color.h
 	var s = base_color.s
 	var v = base_color.v
-	# Pequeñas variaciones aleatorias
 	h = wrapf(h + randf_range(-0.1, 0.1), 0, 2.0)
 	s = clamp(s + randf_range(-0.1, 0.1), 0.05, 2.0)
 	v = clamp(v + randf_range(-0.4, 0.4), 0.05, 1.2)
@@ -120,18 +133,20 @@ func get_tamano_por_categoria(categoria: String) -> float:
 			return randf_range(referencia * 0.25, referencia * 0.35)
 		_:
 			return get_tamano_aleatorio()
-			
-func get_random_depth():
-	var depth := randf()
-	
-	if depth < 0.33:
-		return "Near"
-	elif depth < 0.66:
-		return "Mid"
-	else:
-		return "Far"
 
-func generar_parametros(config: Dictionary) -> Dictionary:
+# ---------------- Profundidad dinámica ----------------
+
+# Decide hacia dónde va a derivar la figura una vez pase su tiempo enfocada.
+# Mayor quality → más probable que se acerque (Near, protagonismo).
+# Menor quality → más probable que se pierda en el fondo (Far).
+func get_depth_target(quality: float) -> String:
+	var focus_chance = lerp(DEPTH_FOCUS_CHANCE_MIN, DEPTH_FOCUS_CHANCE_MAX, quality)
+	if randf() < focus_chance:
+		return "Mid"
+	return "Near" if randf() < 0.5 else "Far"
+
+
+func generar_parametros(config: Dictionary, quality: float = 0.0) -> Dictionary:
 	var forma = config.forma
 	if forma == "aleatorio":
 		forma = get_forma_aleatoria()
@@ -145,9 +160,13 @@ func generar_parametros(config: Dictionary) -> Dictionary:
 		tamano = get_tamano_aleatorio()
 	else:
 		tamano = get_tamano_por_categoria(config.tamano)
+
+	# Bono de tamaño por calidad del gesto (no cambia de categoría, solo escala dentro de ella)
+	tamano *= 1.0 + (quality * QUALITY_SIZE_BONUS_MAX)
 	
 	var personalidad = config.personalidad
-	personalidad = get_personalidad_aleatoria()
+	if personalidad == "aleatorio":
+		personalidad = get_personalidad_aleatoria()
 
 	var color_a = config.color_a
 	var color_b = config.color_b
@@ -166,7 +185,16 @@ func generar_parametros(config: Dictionary) -> Dictionary:
 		else:
 			color_a = get_color_aleatorio()
 			color_b = get_color_aleatorio()
-			
+
+	# Bono de brillo por calidad del gesto
+	color_a = color_a.lightened(quality * QUALITY_BRIGHTEN_MAX)
+	color_b = color_b.lightened(quality * QUALITY_BRIGHTEN_MAX)
+
+	# Profundidad: siempre nace enfocada, deriva según la calidad del gesto
+	var depth_target = get_depth_target(quality)
+	var depth_hold = lerp(DEPTH_HOLD_MIN, DEPTH_HOLD_MAX, quality)
+	var depth_drift_duration = randf_range(DEPTH_DRIFT_MIN, DEPTH_DRIFT_MAX)
+
 	return {
 		"forma": forma,
 		"estilo": estilo,
@@ -175,7 +203,11 @@ func generar_parametros(config: Dictionary) -> Dictionary:
 		"tamano": tamano,
 		"personalidad": personalidad,
 		"tamanoMaximo": get_tamano_maximo(),
-		"depth": get_random_depth(),
+		"depth": "Mid",
+		"depth_target": depth_target,
+		"depth_hold": depth_hold,
+		"depth_drift_duration": depth_drift_duration,
+		"quality": quality,
 		"posicion": config.posicion
 	}
 	
@@ -188,25 +220,19 @@ func _ready():
 func on_invoke(type: String, data: Dictionary):
 	match type:
 		"condense":
-			spawn_random(data.position)
+			spawn_random(data.position, data.get("quality", 0.0))
 
-func spawn_random(position) -> Node:
-	# Limita figuras en pantalla
-	if figuras_vivas.size() < limite_figuras:
-		var fig = FiguraESN.instantiate()
-		var params = generar_parametros(Utils.defaultConfig(position))
-		
-		fig.init(params)
-		
-		figuresContainer.add_child(fig)
-			
-		figuras_vivas.append(fig)
-		
-		emit_signal("figure_spawned", fig)
-		EventBusAuto.emit_signal("figure_spawned", fig)
-		return
-	else:
-		return
+func spawn_random(position: Vector2, quality: float = 0.0) -> Node:
+	if figuras_vivas.size() >= limite_figuras:
+		return null
+
+	var fig = FiguraESN.instantiate()
+	var params = generar_parametros(Utils.defaultConfig(position), quality)
 	
-
-		
+	fig.init(params)
+	figuresContainer.add_child(fig)
+	figuras_vivas.append(fig)
+	
+	emit_signal("figure_spawned", fig)
+	EventBusAuto.emit_signal("figure_spawned", fig)
+	return fig

@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://ceik42gwuifjx" path="res://script/managers/input_ritual_manager.gd" id="4_vjeo1"]
 [ext_resource type="Script" uid="uid://dioj40rquml8c" path="res://script/managers/invocation_controller_manager.gd" id="5_a2pn8"]
 [ext_resource type="Script" uid="uid://cfgom8bl65jpj" path="res://script/ux/hud.gd" id="5_ycoim"]
+[ext_resource type="PackedScene" uid="uid://b6wc6utyc8ogu" path="res://escenas/ux/condesation_fx.tscn" id="6_706d0"]
 [ext_resource type="Script" uid="uid://del3na45h6114" path="res://script/managers/LuminanceManager.gd" id="6_kb861"]
 [ext_resource type="Script" uid="uid://c6rb421iq6qqd" path="res://script/ux/ritual_controller.gd" id="6_wedxf"]
 [ext_resource type="Texture2D" uid="uid://lpcyy6qah0v8" path="res://assets/images/circulo.png" id="8_7vnia"]
@@ -131,6 +132,7 @@ script = ExtResource("5_a2pn8")
 
 [node name="RitualController" type="Node" parent="Managers" unique_id=1761255757]
 script = ExtResource("6_wedxf")
+condense_ritual_scene = ExtResource("6_706d0")
 
 [node name="LuminanceManager" type="Node" parent="Managers" unique_id=998798840]
 script = ExtResource("6_kb861")
@@ -231,6 +233,7 @@ text = "LUMINANCIA"
 vertical_alignment = 1
 
 [node name="Trail" parent="hud" unique_id=2081527438 instance=ExtResource("10_odxoc")]
+width = 25.0
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=929896588]
 stream = SubResource("AudioStreamRandomizer_7vnia")

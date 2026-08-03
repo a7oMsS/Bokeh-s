@@ -1,8 +1,4 @@
-res://escenas/ux/condesation_fx.tscn
+res://escenas/obj/Figura.tscn
 res://assets/themes/bokehsTheme.tres
-res://script/ux/condesation_fx.gd
-res://escenas/ux/trail.gd
-res://escenas/ux/main.tscn
-res://escenas/ux/trail.tscn
-res://script/ux/camera_2d.gd
-res://figuras/skew.gdshader
+res://script/figuras/FiguraManager.gd
+res://script/figuras/Figura.gd

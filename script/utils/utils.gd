@@ -17,7 +17,7 @@ static func defaultConfig(position):
 			"color_a": Color.DODGER_BLUE,
 			"color_b": Color.HOT_PINK,
 			"tamano": "aleatorio",
-			"personalidad": "",
+			"personalidad": "aleatorio",
 			"tamanoMaximo": 120.0,
 			"usar_paleta": false,
 			"color_b_relacionado": false,
