@@ -9,10 +9,10 @@
 [ext_resource type="PackedScene" uid="uid://b6wc6utyc8ogu" path="res://escenas/ux/condesation_fx.tscn" id="6_706d0"]
 [ext_resource type="Script" uid="uid://del3na45h6114" path="res://script/managers/LuminanceManager.gd" id="6_kb861"]
 [ext_resource type="Script" uid="uid://c6rb421iq6qqd" path="res://script/ux/ritual_controller.gd" id="6_wedxf"]
+[ext_resource type="Script" uid="uid://d4dk1j4bi3h2r" path="res://escenas/ux/ScoreManager.gd" id="8_6q4yw"]
 [ext_resource type="Texture2D" uid="uid://lpcyy6qah0v8" path="res://assets/images/circulo.png" id="8_7vnia"]
 [ext_resource type="AudioStream" uid="uid://0eind5l8ocuo" path="res://assets/musica/peakk.mp3" id="9_mjec7"]
 [ext_resource type="Texture2D" uid="uid://7w4m6m5sc2ci" path="res://assets/images/grunge_texture.png" id="9_odxoc"]
-[ext_resource type="PackedScene" uid="uid://cyg735dbkbw1q" path="res://escenas/ux/trail.tscn" id="10_odxoc"]
 [ext_resource type="Theme" uid="uid://da8clmu3p12hv" path="res://assets/themes/bokehsTheme.tres" id="11_7o4h5"]
 [ext_resource type="Shader" uid="uid://bwm5qsjtjjb6d" path="res://figuras/skew.gdshader" id="11_dy78v"]
 [ext_resource type="Script" uid="uid://cfw4nqpoutqhn" path="res://script/ux/camera_2d.gd" id="11_t3fqk"]
@@ -24,10 +24,11 @@ blend_mode = 1
 
 [sub_resource type="Environment" id="Environment_mjec7"]
 background_mode = 3
+glow_enabled = true
 glow_intensity = 0.5
 glow_bloom = 0.1
-glow_hdr_threshold = 2.93
-glow_hdr_scale = 4.0
+glow_hdr_threshold = 2.2
+glow_hdr_scale = 3.17
 glow_hdr_luminance_cap = 256.0
 fog_depth_curve = 10.928321
 fog_depth_begin = 809.5
@@ -137,6 +138,9 @@ condense_ritual_scene = ExtResource("6_706d0")
 [node name="LuminanceManager" type="Node" parent="Managers" unique_id=998798840]
 script = ExtResource("6_kb861")
 
+[node name="ScoreManager" type="Node" parent="Managers" unique_id=705504330]
+script = ExtResource("8_6q4yw")
+
 [node name="ClicArea" type="ColorRect" parent="." unique_id=704783883]
 layout_mode = 1
 anchors_preset = 15
@@ -166,6 +170,7 @@ texture = ExtResource("9_odxoc")
 expand_mode = 1
 
 [node name="FiguresLayer" type="Control" parent="ClicArea" unique_id=987631772]
+z_index = -1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -189,7 +194,7 @@ randomness = 0.2
 process_material = SubResource("ParticleProcessMaterial_t3fqk")
 
 [node name="CanvasModulate" type="CanvasModulate" parent="ClicArea" unique_id=975298817]
-color = Color(0.32024416, 0.32024416, 0.32024413, 1)
+color = Color(0.37630412, 0.38040954, 0.6226239, 1)
 
 [node name="hud" type="CanvasLayer" parent="." unique_id=464876629]
 script = ExtResource("5_ycoim")
@@ -232,8 +237,23 @@ theme = ExtResource("11_7o4h5")
 text = "LUMINANCIA"
 vertical_alignment = 1
 
-[node name="Trail" parent="hud" unique_id=2081527438 instance=ExtResource("10_odxoc")]
-width = 25.0
+[node name="ScoreLabel" type="Label" parent="hud" unique_id=1597439057]
+anchors_preset = -1
+anchor_left = 0.02
+anchor_top = 0.03
+anchor_right = 0.427
+anchor_bottom = 0.1
+offset_right = 40.0
+offset_bottom = 36.0
+
+[node name="ComboLabel" type="Label" parent="hud" unique_id=690402644]
+anchors_preset = -1
+anchor_left = 0.02
+anchor_top = 0.15
+anchor_right = 0.467
+anchor_bottom = 0.206
+offset_right = 40.0
+offset_bottom = 36.0
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=929896588]
 stream = SubResource("AudioStreamRandomizer_7vnia")

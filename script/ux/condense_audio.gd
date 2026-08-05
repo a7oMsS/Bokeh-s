@@ -12,7 +12,7 @@ var pitch : float = 1.0
 @onready var bus_index = AudioServer.get_bus_index("Condense")
 @onready var filter_effect : AudioEffectLowPassFilter = AudioServer.get_bus_effect(bus_index, 0)
 
-@export var audio_success = preload("res://assets/sonidos/condense_success.wav")
+@export var audio_success = preload("res://assets/sonidos/success1.wav")
 
 func _process(delta):
 	if !explotando:

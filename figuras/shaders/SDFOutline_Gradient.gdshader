@@ -114,6 +114,8 @@ float sdf_shape(vec2 p) {
 }
 
 void fragment() {
+    vec4 modulate_in = COLOR;
+
     vec2 uv = (UV - vec2(0.5)) * 2.0;
     float d = sdf_shape(uv);
     float scale = clamp(size, 0.7, 1.0);
@@ -121,6 +123,6 @@ void fragment() {
     float border = border_width * scale;
     float alpha = smoothstep(border, border-0.000001, abs(d));
 
-    vec3 color = mix(color_a.rgb, color_b.rgb, UV.x);
-    COLOR = vec4(color, alpha * color_a.a);
+    vec3 color = mix(color_a.rgb, color_b.rgb, UV.x) * modulate_in.rgb;
+    COLOR = vec4(color, alpha * color_a.a * modulate_in.a);
 }

@@ -1,7 +1,12 @@
 [gd_scene format=3 uid="uid://diqndacr1ae23"]
 
-[ext_resource type="FontFile" uid="uid://bmxlt0oqoodhe" path="res://assets/fuentes/SpecialGothicExpandedOne-Regular.ttf" id="1_45dbp"]
+[ext_resource type="FontFile" uid="uid://ce7m1oivwn5nk" path="res://assets/fuentes/3DIsometric-Bold.ttf" id="1_lfn8u"]
 [ext_resource type="Script" uid="uid://brgtbjngtp2rm" path="res://script/ui/floating_text.gd" id="2_ixbur"]
+
+[sub_resource type="FontVariation" id="FontVariation_kik8e"]
+base_font = ExtResource("1_lfn8u")
+variation_embolden = 0.26
+spacing_glyph = -6
 
 [node name="Label" type="Label" unique_id=2089585347]
 anchors_preset = 8
@@ -17,9 +22,8 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 10
-theme_override_fonts/font = ExtResource("1_45dbp")
-theme_override_font_sizes/font_size = 42
+theme_override_fonts/font = SubResource("FontVariation_kik8e")
+theme_override_font_sizes/font_size = 60
 text = "+1"
 script = ExtResource("2_ixbur")
+normal_color = Color(1, 0.96400005, 0.45999998, 1)

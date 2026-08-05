@@ -1,11 +1,10 @@
 extends Node2D
 
 @onready var pop_particles = $PopParticles
-@onready var anim_player = $AnimationPlayer
 @onready var point_light
 var paramsGlobal
 
-@export var lifetime: float = 40.0
+@export var lifetime: float = 45.0
 @export var lifetime_enabled: bool = true
 @onready var lifetime_timer: Timer = $LifetimeTimer
 
@@ -117,6 +116,8 @@ func init(params: Dictionary) -> void:
 	_base_color_b = params.color_b
 	_tamano = params.tamano
 	_tamano_maximo = params.tamanoMaximo
+	
+
 
 	_depth_target = params.get("depth_target", "Mid")
 	_depth_hold = params.get("depth_hold", 2.0)
@@ -132,7 +133,7 @@ func init(params: Dictionary) -> void:
 	shader_material.set_shader_parameter("size", (_tamano / _tamano_maximo))
 
 	# Aplica de una vez el estado de nacimiento (normalmente "Mid")
-	_apply_depth_visuals(params.get("depth", "Mid"), 0.0)
+	_apply_depth_visuals(params.get("depth", "Mid"), 0.5)
 
 	# 6) Posición
 	position = params.posicion
@@ -153,31 +154,37 @@ func _apply_depth_visuals(depth_name: String, duration: float) -> void:
 
 	var normalized_size = _tamano / _tamano_maximo
 	var energy = lerp(0.6, 0.8, normalized_size) * v.energy_mult
+	
+	var target_color_a = _base_color_a * Color(energy, energy, energy, 1.0)
+	target_color_a.a = v.alpha
+	var target_color_b = _base_color_b * Color(energy, energy, energy, 1.0)
+	target_color_b.a = v.alpha
 
-	var target_color_a = _base_color_a * energy
-	var target_color_b = _base_color_b * energy
+
+	shader_material.set_shader_parameter("color_a", target_color_a)
+	shader_material.set_shader_parameter("color_b", target_color_b)
+
+	# color_a/color_b son la identidad de la figura y ya no cambian con
+	# la profundidad. Brillo y transparencia por profundidad viven en
+	# modulate, que los 4 shaders ya respetan.
+	var target_modulate := Color(energy, energy, energy, v.alpha)
+	var target_light_color = _base_color_a * energy
 	var target_scale = Vector2.ONE * v.scale_mult
 	var target_mesh_size = Vector2.ONE * (_tamano * _padding * v.mesh_mult)
 
-	# El z_index es de por sí un salto discreto (orden de dibujo), no algo
-	# que se pueda animar con naturalidad — se aplica al iniciar la deriva.
 	self.z_index = v.z_index
 
 	if duration <= 0.0:
 		self.scale = target_scale
-		self.modulate.a = v.alpha
+		self.modulate = target_modulate
 		shader_material.set_shader_parameter("smoothness", v.smoothness)
-		shader_material.set_shader_parameter("color_a", target_color_a)
-		shader_material.set_shader_parameter("color_b", target_color_b)
 		if point_light:
-			point_light.color = target_color_a
+			point_light.color = target_light_color
 		if body_mesh.mesh:
 			body_mesh.mesh.size = target_mesh_size
 		return
 
 	var start_smoothness = shader_material.get_shader_parameter("smoothness")
-	var start_color_a = shader_material.get_shader_parameter("color_a")
-	var start_color_b = shader_material.get_shader_parameter("color_b")
 	var start_light_color = point_light.color if point_light else Color.WHITE
 	var start_mesh_size = body_mesh.mesh.size if body_mesh.mesh else target_mesh_size
 
@@ -185,35 +192,24 @@ func _apply_depth_visuals(depth_name: String, duration: float) -> void:
 	tween.set_parallel(true)
 	tween.tween_property(self, "scale", target_scale, duration) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(self, "modulate:a", v.alpha, duration) \
+	tween.tween_property(self, "modulate", target_modulate, duration) \
 		.set_trans(Tween.TRANS_SINE)
 
-	# Shader, luz y mesh no son propiedades simples del nodo, así que las
-	# interpolamos a mano con un solo método — más robusto que confiar en
-	# que el path "shader_parameter/x" sea tweenable directamente.
 	tween.tween_method(func(t: float):
 		shader_material.set_shader_parameter("smoothness", lerp(start_smoothness, v.smoothness, t))
-		shader_material.set_shader_parameter("color_a", start_color_a.lerp(target_color_a, t))
-		shader_material.set_shader_parameter("color_b", start_color_b.lerp(target_color_b, t))
 		if point_light:
-			point_light.color = start_light_color.lerp(target_color_a, t)
+			point_light.color = start_light_color.lerp(target_light_color, t)
 		if body_mesh.mesh:
 			body_mesh.mesh.size = start_mesh_size.lerp(target_mesh_size, t)
 	, 0.0, 1.0, duration)
 
 
 func _process(delta):
-	if personality:
-		personality._process(delta)
-
 	if not _has_drifted:
 		_depth_timer += delta
 		if _depth_timer >= _depth_hold:
 			_has_drifted = true
 			if _depth_target == "Mid":
-				# Gesto exitoso: se queda enfocada. Un pequeño pulso confirma
-				# que "quedó anclada" en vez de que sea indistinguible de
-				# una figura que aún no decidió su destino.
 				_play_settle_pulse()
 			else:
 				_apply_depth_visuals(_depth_target, _depth_drift_duration)
@@ -237,19 +233,19 @@ func _play_settle_pulse() -> void:
 
 func aparecer():
 	self.scale = Vector2(0, 0)
-	self.modulate.a = 0.0
+	self.modulate = Color(1, 1, 1, 0)
 	self.rotation = -PI / 2
 
-	# Antes se animaba hacia valores fijos (1,1 / 1.0) sin importar la
-	# profundidad de nacimiento. Ahora respeta el estado real de Mid.
-	var mid_visuals: Dictionary = DEPTH_VISUALS["Mid"]
-	var target_scale = Vector2.ONE * mid_visuals.scale_mult
-	var target_alpha = mid_visuals.alpha
+	var mid: Dictionary = DEPTH_VISUALS["Mid"]
+	var normalized_size = _tamano / _tamano_maximo
+	var energy = lerp(0.6, 0.8, normalized_size) * mid.energy_mult
+	var target_modulate := Color(energy, energy, energy, mid.alpha)
+	var target_scale = Vector2.ONE * mid.scale_mult
 
 	var tween = create_tween()
 	tween.tween_property(self, "scale", target_scale, 2.0).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(self, "modulate:a", target_alpha, 0.1)
-	tween.parallel().tween_property(self, "rotation",  self.rotation + PI / 2, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tween.parallel().tween_property(self, "modulate", target_modulate, 0.1)
+	tween.parallel().tween_property(self, "rotation", self.rotation + PI / 2, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 	await get_tree().create_timer(0.05).timeout
 

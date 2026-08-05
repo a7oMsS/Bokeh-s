@@ -5,7 +5,7 @@ extends Node
 @onready var FiguraESN = preload("res://escenas/obj/Figura.tscn")
 
 var figuras_vivas: Array = []
-var limite_figuras = 40
+var limite_figuras = 60
 signal figure_spawned(fig: Node)
 
 
@@ -19,7 +19,7 @@ var todas_personalidades = ["estatico","rebote","parpadeo","vibracion","cambioCo
 var formas = ["circulo"]
 var estilos = ["solido"]          
 var tamanos = ["Grandes"]
-var personalidades = ["parpadeo","vibracion"]
+var personalidades = ["rebote"]
 
 # ======== Bonus por calidad del gesto (spin_ratio, 0-1) ========
 const QUALITY_SIZE_BONUS_MAX := 0.35     # hasta +35% de tamaño con gesto perfecto
@@ -75,25 +75,26 @@ func get_personalidades_disp() -> Array:
 	return personalidades
 
 func get_color_aleatorio() -> Color:
-	var base_hue := 45.0 / 360.0 
-	var split_ofset := 25.0 / 360.0
-	var comp_hue = fmod((base_hue + 0.5), 1.0)
-	var split_a = fmod((comp_hue - split_ofset + 1.0), 1.0)
-	var split_b = fmod((comp_hue + split_ofset), 1.0)
-	
+	# Armonía triádica real: 3 hues a 120° exactos entre sí.
+	# 60° = amarillo/dorado, 180° = cian puro, 300° = magenta puro
+	# (son los 3 colores secundarios del círculo HSV — de ahí que caigan
+	# perfectamente equidistantes sin necesidad de calcular complementos).
+	var hue_dorado := 60.0 / 360.0
+	var hue_cian := 180.0 / 360.0
+	var hue_magenta := 300.0 / 360.0
+
 	var roll = randf()
 	var hue: float
-	
-	if roll < 0.7:
-		hue = base_hue
-	elif  roll < 0.85:
-		hue = split_a
+	if roll < 0.6:
+		hue = hue_dorado      # 60%
+	elif roll < 0.9:
+		hue = hue_cian        # 30%
 	else:
-		hue = split_b
-		
-	var saturation = randf_range(0.6, 0.85)
-	var value = randf_range(0.6, 1.0)
-	
+		hue = hue_magenta     # 10%
+
+	var saturation = randf_range(0.5, 0.9)
+	var value = randf_range(0.5, 1.0)
+
 	return Color.from_hsv(hue, saturation, value)
 
 func get_color_similar(base_color: Color) -> Color:

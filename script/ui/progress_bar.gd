@@ -5,8 +5,8 @@ class_name LuminanceBar
 @onready var particles: GPUParticles2D = $GPUParticles2D
 
 # Colores de la barra
-var start_color := Color(0.567, 0.74, 0.0, 1.0)      # amarillo cálido
-var end_color   := Color(0.022, 0.466, 0.804, 1.0)     # blanco-azulado (cerca del umbral)
+var start_color := Color(0.703, 0.74, 0.0, 1.0)      # amarillo cálido
+var end_color   := Color(0.0, 0.505, 0.463, 1.0)     # blanco-azulado (cerca del umbral)
 # Colores de la barra
 var start_color_glow := Color(0.95, 0.855, 0.0, 0.298)      # amarillo cálido
 var end_color_glow   := Color(0.047, 0.553, 0.94, 0.38)     # blanco-azulado (cerca del umbral)

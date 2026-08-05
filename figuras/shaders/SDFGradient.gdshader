@@ -112,12 +112,13 @@ float sdf_shape(vec2 p) {
     }
     return sdCircle(p); // Valor por defecto
 }
-
 void fragment() {
+    vec4 modulate_in = COLOR;
+
     vec2 uv = (UV - vec2(0.5)) * 2.0;
     float d = sdf_shape(uv);
     float alpha = smoothstep(0.0, blur, -d);
-    vec3 color = mix(color_a.rgb, color_b.rgb, UV.x);
-	float final_alpha = alpha * color_a.a;
+    vec3 color = mix(color_a.rgb, color_b.rgb, UV.x) * modulate_in.rgb;
+	float final_alpha = alpha * color_a.a * modulate_in.a;
     COLOR = vec4(color, final_alpha);
 }

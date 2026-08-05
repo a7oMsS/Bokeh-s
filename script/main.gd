@@ -6,6 +6,7 @@ extends Control
 @onready var ritual_controller = $Managers/RitualController
 @onready var invocation_controller = $Managers/InvocationControllerManager
 @onready var figura_manager = $Managers/FiguraManager
+@onready var score_manager = $Managers/ScoreManager
 @onready var camera = $Camera2D
 @onready var luminance_manager = $Managers/LuminanceManager
 @onready var progressBar = $hud/ProgressBar
@@ -28,6 +29,9 @@ func _ready():
 
 	# Ritual → World
 	ritual_controller.ritual_resolved.connect(invocation_controller.on_ritual_resolved)
+	ritual_controller.ritual_resolved.connect(score_manager.on_ritual_resolved)
+	score_manager.score_updated.connect(hud.update_score)
+	score_manager.combo_updated.connect(hud.update_combo)
 	invocation_controller.invoke.connect(figura_manager.on_invoke)
 
 func _on_condensation_triggered(level: int):

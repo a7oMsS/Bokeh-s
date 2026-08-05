@@ -1,4 +1,15 @@
-res://escenas/obj/Figura.tscn
+res://escenas/ux/trail.tscn
 res://assets/themes/bokehsTheme.tres
+res://figuras/shaders/SDFSolid.gdshader
+res://figuras/shaders/SDFGradient.gdshader
+res://figuras/shaders/SDFOutline.gdshader
+res://figuras/shaders/SDFOutline_Gradient.gdshader
+res://script/ux/condense_audio.gd
 res://script/figuras/FiguraManager.gd
+res://escenas/obj/Figura.tscn
 res://script/figuras/Figura.gd
+res://script/managers/input_ritual_manager.gd
+res://escenas/ux/condesation_fx.tscn
+res://escenas/ux/main.tscn
+res://script/ux/condesation_fx.gd
+res://script/ui/progress_bar.gd

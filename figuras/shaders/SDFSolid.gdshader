@@ -65,25 +65,26 @@ float sdf_shape(vec2 p) {
 }
 
 void fragment() {
+    vec4 modulate_in = COLOR; // color heredado: self.modulate / self_modulate
+
     vec2 uv = UV - 0.5;
     float d = sdf_shape(uv * 2.0 * padding);
     
     float soft = max(smoothness, 0.035);
-	
-	if (forma == 3 || forma == 4) { // estrellas
-    soft = 0.065;   // menos blur en estrellas
-} else if (forma == 5 || forma == 1) { // hexágono y cuadrado
-    soft = 0.09;
-}
+	if (forma == 3 || forma == 4) {
+	    soft = 0.065;
+	} else if (forma == 5 || forma == 1) {
+	    soft = 0.09;
+	}
     
     if (d > soft * 7.5) {
         COLOR = vec4(0.0);
         discard;
     }
     
-    float core   = pow(smoothstep(soft * 0.95, -soft * 1.9, d), 1.6);   // núcleo más fuerte
+    float core   = pow(smoothstep(soft * 0.95, -soft * 1.9, d), 1.6);
     float body   = smoothstep(soft * 2.6, -soft * 0.8, d) * 0.96;
-    float halo   = smoothstep(soft * 7.0, -soft * 3.5, d) * 0.18;      // halo más pequeño
+    float halo   = smoothstep(soft * 7.0, -soft * 3.5, d) * 0.18;
     float bubble = smoothstep(soft * 1.3, -soft * 0.85, d) * 
                    smoothstep(soft * 3.5, soft * 1.2, d) * 0.5;
     
@@ -94,9 +95,9 @@ void fragment() {
     vec3 col = color_a.rgb * vec3(r * 1.08, body * 0.97, b * 1.1);
     
     float intensity = core * 1.75 + body * 1.4 + halo * 0.4 + bubble * 1.1;
-    vec3 final_color = col * intensity;
+    vec3 final_color = col * intensity * modulate_in.rgb;
     
-    float alpha = (core * 0.82 + body * 0.65) * color_a.a * 0.85;
+    float alpha = (core * 0.82 + body * 0.65) * color_a.a * 0.85 * modulate_in.a;
     
     COLOR = vec4(final_color, alpha);
 }

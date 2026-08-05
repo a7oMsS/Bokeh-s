@@ -1,4 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://c5lacy38bkyu7"]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://c5lacy38bkyu7"]
 
 [ext_resource type="Shader" uid="uid://bbwof0plpthuy" path="res://figuras/shaders/SDFGradient.gdshader" id="1_nnuo1"]
 
@@ -7,3 +7,4 @@ shader = ExtResource("1_nnuo1")
 shader_parameter/color_a = Color(0, 0, 0, 1)
 shader_parameter/color_b = Color(0, 0, 0, 1)
 shader_parameter/forma = 0
+shader_parameter/blur = 0.0

@@ -1,4 +1,7 @@
 Line2D
+RichTextLabel
+Label
+Node
 Sprite2D
 PointLight2D
 CanvasModulate
@@ -8,7 +11,4 @@ ProgressBar
 BackBufferCopy
 WorldEnvironment
 TextureProgressBar
-Label
-Node
 ColorRect
-Camera2D

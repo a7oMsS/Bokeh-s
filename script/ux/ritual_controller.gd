@@ -24,9 +24,10 @@ func start_condense(position: Vector2) -> void:
 # 2. DURANTE EL GESTO — actualizar visuales
 # ================================================================
 
-func on_condense_held(_position: Vector2, spin_ratio: float) -> void:
+func on_condense_held(spin_ratio: float, angle: float) -> void:
 	if active_ritual and active_ritual.ritual_type == "condense":
 		active_ritual.update(spin_ratio)
+		active_ritual.add_trail_point(angle)
 
 
 # ================================================================
