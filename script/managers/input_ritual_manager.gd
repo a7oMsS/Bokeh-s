@@ -14,7 +14,7 @@ var accumulated_rotation := 0.0
 var _last_angle := 0.0
 var _has_last_angle := false
 
-const MIN_HOLD_TIME := 0.1
+const MIN_HOLD_TIME := 0.5
 
 # Zona de interacción: dentro de este anillo cuenta el gesto.
 const MIN_RADIUS := 20.0     # zona muerta cerca del centro (evita ruido)

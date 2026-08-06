@@ -19,7 +19,7 @@ var todas_personalidades = ["estatico","rebote","parpadeo","vibracion","cambioCo
 var formas = ["circulo"]
 var estilos = ["solido"]          
 var tamanos = ["Grandes"]
-var personalidades = ["rebote"]
+var personalidades = ["cambioColor"]
 
 # ======== Bonus por calidad del gesto (spin_ratio, 0-1) ========
 const QUALITY_SIZE_BONUS_MAX := 0.35     # hasta +35% de tamaño con gesto perfecto

@@ -7,8 +7,9 @@ extends Control
 @onready var invocation_controller = $Managers/InvocationControllerManager
 @onready var figura_manager = $Managers/FiguraManager
 @onready var score_manager = $Managers/ScoreManager
-@onready var camera = $Camera2D
+@onready var audio_manager = $Managers/AudioManager
 @onready var luminance_manager = $Managers/LuminanceManager
+@onready var camera = $Camera2D
 @onready var progressBar = $hud/ProgressBar
 @onready var progressLabel = $hud/Label
 @onready var hud = $hud
@@ -23,6 +24,7 @@ func _ready():
 	input_ritual_manager.condense_started.connect(ritual_controller.start_condense)
 	input_ritual_manager.condense_held.connect(ritual_controller.on_condense_held)
 	input_ritual_manager.condense_resolved.connect(ritual_controller.on_condense_resolved)
+	input_ritual_manager.condense_resolved.connect(func(_pos, spin_ratio):audio_manager.play_success(spin_ratio))
 	
 	# Cancel
 	input_ritual_manager.ritual_cancelled.connect(ritual_controller.on_ritual_cancelled)
@@ -30,6 +32,7 @@ func _ready():
 	# Ritual → World
 	ritual_controller.ritual_resolved.connect(invocation_controller.on_ritual_resolved)
 	ritual_controller.ritual_resolved.connect(score_manager.on_ritual_resolved)
+	
 	score_manager.score_updated.connect(hud.update_score)
 	score_manager.combo_updated.connect(hud.update_combo)
 	invocation_controller.invoke.connect(figura_manager.on_invoke)

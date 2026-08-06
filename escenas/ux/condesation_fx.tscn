@@ -6,6 +6,8 @@
 [ext_resource type="Texture2D" uid="uid://ccywsa7ah10is" path="res://assets/images/2d_lights_and_shadows_neutral_point_light.webp" id="4_lt0nm"]
 [ext_resource type="Texture2D" uid="uid://cqcjg4prwnbk1" path="res://assets/images/rounded_24.png" id="5_5uxxv"]
 [ext_resource type="PackedScene" uid="uid://cyg735dbkbw1q" path="res://escenas/ux/trail.tscn" id="6_05858"]
+[ext_resource type="AudioStream" uid="uid://pvlgew012nf3" path="res://assets/sonidos/ES_Designed_-Synthetic_-Ascending-Notes_-Warm_-Harmonic_-Delayed-Epidemic-Sound.wav" id="7_g4s5m"]
+[ext_resource type="Script" uid="uid://c4n6mk1okbvs2" path="res://script/ux/CondenseChargeAudio.gd" id="7_q1k4p"]
 
 [sub_resource type="Curve" id="Curve_6yvqr"]
 _data = [Vector2(0, 0), 0.0, 3.3242192, 0, 0, Vector2(0.11180124, 0.6428572), -0.07388278, -0.07388278, 0, 0, Vector2(1, 0), -0.77134174, 0.0, 0, 0]
@@ -70,3 +72,8 @@ modulate = Color(2.8223546, 2.8223546, 2.8223546, 1)
 
 [node name="BoundaryRing" type="Line2D" parent="." unique_id=1635283667]
 visible = false
+
+[node name="ChargeAudio" type="AudioStreamPlayer2D" parent="." unique_id=1637124786]
+stream = ExtResource("7_g4s5m")
+script = ExtResource("7_q1k4p")
+metadata/_custom_type_script = "uid://c4n6mk1okbvs2"

@@ -1,4 +1,0 @@
-echo "*.tmp" >> .gitignore
-git rm --cached -r $(git ls-files "*.tmp")
-git add .gitignore
-git commit -m "chore: ignorar archivos .tmp de respaldo del editor"

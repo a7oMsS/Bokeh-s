@@ -1,7 +1,8 @@
+CondenseChargeAudio
+Node
 Line2D
 RichTextLabel
 Label
-Node
 Sprite2D
 PointLight2D
 CanvasModulate

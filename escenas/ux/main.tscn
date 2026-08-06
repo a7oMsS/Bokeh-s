@@ -11,6 +11,7 @@
 [ext_resource type="Script" uid="uid://c6rb421iq6qqd" path="res://script/ux/ritual_controller.gd" id="6_wedxf"]
 [ext_resource type="Script" uid="uid://d4dk1j4bi3h2r" path="res://escenas/ux/ScoreManager.gd" id="8_6q4yw"]
 [ext_resource type="Texture2D" uid="uid://lpcyy6qah0v8" path="res://assets/images/circulo.png" id="8_7vnia"]
+[ext_resource type="Script" uid="uid://b6rjyu2tdrla8" path="res://script/managers/AudioManager.gd" id="9_6q4yw"]
 [ext_resource type="AudioStream" uid="uid://0eind5l8ocuo" path="res://assets/musica/peakk.mp3" id="9_mjec7"]
 [ext_resource type="Texture2D" uid="uid://7w4m6m5sc2ci" path="res://assets/images/grunge_texture.png" id="9_odxoc"]
 [ext_resource type="Theme" uid="uid://da8clmu3p12hv" path="res://assets/themes/bokehsTheme.tres" id="11_7o4h5"]
@@ -141,6 +142,9 @@ script = ExtResource("6_kb861")
 [node name="ScoreManager" type="Node" parent="Managers" unique_id=705504330]
 script = ExtResource("8_6q4yw")
 
+[node name="AudioManager" type="Node" parent="Managers" unique_id=1916758120]
+script = ExtResource("9_6q4yw")
+
 [node name="ClicArea" type="ColorRect" parent="." unique_id=704783883]
 layout_mode = 1
 anchors_preset = 15
@@ -257,7 +261,7 @@ offset_bottom = 36.0
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="." unique_id=929896588]
 stream = SubResource("AudioStreamRandomizer_7vnia")
-volume_db = -7.068
+volume_db = -30.281
 autoplay = true
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1705537701]

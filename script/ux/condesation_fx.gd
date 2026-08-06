@@ -10,6 +10,7 @@ signal condense_cancel(data: Dictionary)
 @onready var sparks: CPUParticles2D = $Sparks
 @onready var light: PointLight2D = $PointLight2D
 @onready var ring: Sprite2D = $Ring
+@onready var charge_audio: CondenseChargeAudio = $ChargeAudio
 
 const COLOR_EMBER := Color(1.0, 0.55, 0.1, 0.85)
 const COLOR_CHARGED := Color(1.0, 0.84, 0.0, 1.0)
@@ -25,7 +26,7 @@ const SPIN_KICK_STRENGTH := 2.0
 
 # Cuánto tarda el núcleo en "sentirse lleno" con solo sostener.
 # Es un parámetro de presentación del ritual, no de validación de input.
-const HOLD_FOR_GUARANTEED := 0.5
+const HOLD_FOR_GUARANTEED := 0.7
 
 var _scale_current := SCALE_MIN
 var _scale_velocity := 0.0
@@ -34,7 +35,6 @@ var _last_quality := 0.0
 const TRAIL_RADIUS := 125.0
 
 @onready var trail: Line2D = $Trail
-@onready var boundary_ring: Line2D = $BoundaryRing
 
 func begin(pos: Vector2) -> void:
 	super.begin(pos)
@@ -43,9 +43,6 @@ func begin(pos: Vector2) -> void:
 	trail.reset()
 	trail.modulate.a = 1.0
 	trail.visible = true
-
-	boundary_ring.modulate.a = 0.25
-	_build_boundary_ring()
 
 	_scale_current = SCALE_MIN
 	_scale_velocity = 0.0
@@ -59,6 +56,9 @@ func begin(pos: Vector2) -> void:
 	core.scale = Vector2.ONE * SCALE_MIN
 	ring.scale = Vector2.ZERO
 	sparks.emitting = true
+	
+	
+	charge_audio.iniciar()
 
 	emit_signal("condense_start", {"position": pos})
 
@@ -97,6 +97,9 @@ func _process(delta: float) -> void:
 	sparks.radial_accel_min = lerp(-100.0, -400.0,quality)
 	sparks.tangential_accel_max = lerp(90.0, 450.0,quality)
 	
+	
+	charge_audio.actualizar(progress, quality)
+	
 
 func update(new_quality: float) -> void:
 	super.update(new_quality)
@@ -111,8 +114,10 @@ func update(new_quality: float) -> void:
 
 func resolve(final_quality: float = 0.0) -> void:
 	super.resolve(final_quality)
-
+	
 	emit_signal("condense_release", {"quality": quality})
+	_finish("success")
+	charge_audio.detener()
 	sparks.emitting = false
 
 	var tween = create_tween()
@@ -121,17 +126,19 @@ func resolve(final_quality: float = 0.0) -> void:
 	tween.parallel().tween_property(ring, "modulate:a", 0.0, 0.4)
 	# dentro de resolve(), junto al tween existente:
 	tween.parallel().tween_property(trail, "modulate:a", 0.0, 0.3)
-	tween.parallel().tween_property(boundary_ring, "modulate:a", 0.0, 0.3)
 	
 	tween.finished.connect(func():
-		_finish("success")
 		queue_free()
 	)
 
 
 func cancel() -> void:
 	emit_signal("condense_cancel", {})
+	_finish("cancel")
+	
 	sparks.emitting = false
+	
+	charge_audio.detener()
 
 	var tween = create_tween()
 	tween.tween_property(core, "scale", Vector2.ZERO, 0.35) \
@@ -139,22 +146,10 @@ func cancel() -> void:
 	tween.parallel().tween_property(core, "modulate:a", 0.0, 0.35)
 	# dentro de cancel(), junto al tween existente:
 	tween.parallel().tween_property(trail, "modulate:a", 0.0, 0.25)
-	tween.parallel().tween_property(boundary_ring, "modulate:a", 0.0, 0.25)
 	tween.finished.connect(func():
-		_finish("cancel")
 		queue_free()
 	)
 	
 func add_trail_point(angle: float) -> void:
 	var point = Vector2(cos(angle), sin(angle)) * TRAIL_RADIUS
 	trail.add_point_at(point)
-
-
-# Anillo estático que marca el límite de la zona de interacción — referencia
-# la MISMA constante que usa InputRitualManager, para que nunca se desincronicen.
-func _build_boundary_ring() -> void:
-	boundary_ring.clear_points()
-	var segments := 48
-	for i in range(segments + 1):
-		var t = (float(i) / segments) * TAU
-		boundary_ring.add_point(Vector2(cos(t), sin(t)) * InputRitualManager.MAX_RADIUS)

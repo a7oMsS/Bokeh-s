@@ -22,7 +22,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 EventBusAuto="*res://script/ux/EventBus.gd"
-CondenseAudioManager="*res://script/managers/condense_audio_manager.gd"
+CondenseAudioManager="*res://script/managers/AudioManager.gd"
 Explorer="*res://script/managers/ExplorerManager.gd"
 
 [display]

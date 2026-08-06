@@ -11,9 +11,9 @@ func _loop():
 	if owner == null:
 		return
 	var tween = owner.create_tween()
-	tween.tween_property(owner.shader_material, "shader_parameter/color_a", get_color_aleatorio(), CYCLE_DURATION) \
+	tween.tween_property(owner.body_mesh.material, "shader_parameter/color_a", get_color_aleatorio(), CYCLE_DURATION) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(owner.shader_material, "shader_parameter/color_b", get_color_aleatorio(), CYCLE_DURATION) \
+	tween.tween_property(owner.body_mesh.material, "shader_parameter/color_b", get_color_aleatorio(), CYCLE_DURATION) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tween.finished.connect(_loop)
 
