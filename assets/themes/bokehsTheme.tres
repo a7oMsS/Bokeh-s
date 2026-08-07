@@ -1,6 +1,6 @@
 [gd_resource type="Theme" format=3 uid="uid://da8clmu3p12hv"]
 
-[ext_resource type="FontFile" uid="uid://bxjehvbrs72ym" path="res://assets/fuentes/SpecialGothic-Regular.ttf" id="1_aixe3"]
+[ext_resource type="FontFile" uid="uid://bxjehvbrs72ym" path="res://assets/fonts/SpecialGothic-Regular.ttf" id="1_aixe3"]
 
 [sub_resource type="FontVariation" id="FontVariation_aixe3"]
 base_font = ExtResource("1_aixe3")

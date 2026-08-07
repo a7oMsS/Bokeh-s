@@ -1,0 +1,71 @@
+[gd_scene format=3 uid="uid://urllosjlbw6j"]
+
+[ext_resource type="Script" uid="uid://buljx64bbuwq2" path="res://script/figures/figure.gd" id="1_a3t0r"]
+[ext_resource type="Texture2D" uid="uid://lpcyy6qah0v8" path="res://assets/images/basic_particles.png" id="2_24np7"]
+[ext_resource type="Script" uid="uid://dpovtafwt1mph" path="res://script/figures/fall_trail.gd" id="2_vcs5x"]
+[ext_resource type="Texture2D" uid="uid://ccywsa7ah10is" path="res://assets/images/2d_lights_and_shadows_neutral_point_light.webp" id="3_24np7"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_a3t0r"]
+blend_mode = 1
+
+[sub_resource type="Curve" id="Curve_vbh4a"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), -2.6250017, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_vcs5x"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="Curve" id="Curve_7ufsj"]
+_data = [Vector2(0, 0), 0.0, 2.0276887, 0, 0, Vector2(1, 1), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_gh7qa"]
+colors = PackedColorArray(0, 0, 0, 0, 1, 1, 1, 1)
+
+[node name="Figure" type="Node2D" unique_id=430328302]
+script = ExtResource("1_a3t0r")
+
+[node name="PopParticles" type="CPUParticles2D" parent="." unique_id=939741531]
+material = SubResource("CanvasItemMaterial_a3t0r")
+emitting = false
+amount = 40
+texture = ExtResource("2_24np7")
+lifetime = 1.6
+one_shot = true
+explosiveness = 1.0
+emission_shape = 1
+emission_sphere_radius = 128.0
+direction = Vector2(0, 0)
+spread = 180.0
+gravity = Vector2(0, 0)
+initial_velocity_min = 209.85
+initial_velocity_max = 453.95
+scale_amount_min = 0.3
+scale_amount_max = 0.6
+scale_amount_curve = SubResource("Curve_vbh4a")
+color = Color(1.7300851, 1.7300851, 1.7300851, 1)
+color_ramp = SubResource("Gradient_vcs5x")
+hue_variation_min = -0.03
+hue_variation_max = 0.03
+
+[node name="Body" type="Node2D" parent="." unique_id=214216848]
+z_index = 2
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="Body" unique_id=896587903]
+z_index = 1
+texture_filter = 2
+texture_repeat = 1
+
+[node name="LifetimeTimer" type="Timer" parent="." unique_id=541882493]
+
+[node name="FallTrail" type="Line2D" parent="." unique_id=738381365]
+top_level = true
+width_curve = SubResource("Curve_7ufsj")
+gradient = SubResource("Gradient_gh7qa")
+joint_mode = 1
+script = ExtResource("2_vcs5x")
+
+[node name="PointLight2D" type="PointLight2D" parent="." unique_id=1505674007]
+energy = 3.91
+texture = ExtResource("3_24np7")
+texture_scale = 3.42

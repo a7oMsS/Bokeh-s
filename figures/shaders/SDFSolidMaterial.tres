@@ -1,0 +1,10 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://bau6lwtjuoumf"]
+
+[ext_resource type="Shader" uid="uid://dco66etqwn04y" path="res://figures/shaders/SDFSolid.gdshader" id="1_es04v"]
+
+[resource]
+shader = ExtResource("1_es04v")
+shader_parameter/color_a = Color(1, 1, 1, 1)
+shader_parameter/forma = 0
+shader_parameter/smoothness = 0.08
+shader_parameter/padding = 1.65

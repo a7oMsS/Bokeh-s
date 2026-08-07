@@ -16,11 +16,11 @@ var _has_last_angle := false
 
 const MIN_HOLD_TIME := 0.5
 
-# Zona de interacción: dentro de este anillo cuenta el gesto.
-const MIN_RADIUS := 20.0     # zona muerta cerca del centro (evita ruido)
-const MAX_RADIUS := 350.0    # límite exterior — salir de aquí cancela el ritual
+## Only gesture movement inside this ring counts. Leaving it cancels the ritual.
+const MIN_RADIUS := 20.0
+const MAX_RADIUS := 300.0
 
-const ROTATION_FOR_MAX_BONUS := TAU * 2.0  # 2 vueltas completas = bonus máximo
+const ROTATION_FOR_MAX_BONUS := TAU * 2.0
 
 
 func process_input(event: InputEvent) -> void:
@@ -46,13 +46,12 @@ func _update_motion(current_pos: Vector2) -> void:
 	var offset = current_pos - start_position
 	var distance = offset.length()
 
-	# Punto 1: zona delimitada — salir del área cancela el ritual, sin excepción.
 	if distance > MAX_RADIUS:
 		_cancel_out_of_bounds()
 		return
 
-	# Dentro de la zona muerta no acumulamos giro (ruido cerca del centro,
-	# donde un pequeño temblor produce cambios de ángulo enormes).
+	## No rotation is accumulated inside the dead zone — near the center,
+	## tiny mouse jitter produces huge angle swings.
 	if distance <= MIN_RADIUS:
 		_has_last_angle = false
 		return
@@ -60,10 +59,9 @@ func _update_motion(current_pos: Vector2) -> void:
 	var current_angle = offset.angle()
 
 	if _has_last_angle:
-		# Punto 2: delta CON signo. Si el jugador mueve el mouse "arriba-abajo"
-		# el ángulo oscila entre dos valores y las reversas se restan entre sí,
-		# así que NO acumula giro real. Solo un movimiento consistente en una
-		# dirección (círculo de verdad) suma de forma neta.
+		## Signed delta: if the player moves back and forth, the angle
+		## oscillates between two values and the reversals cancel out.
+		## Only consistent rotation in one direction accumulates net spin.
 		var delta_angle = wrapf(current_angle - _last_angle, -PI, PI)
 		accumulated_rotation += delta_angle
 
@@ -92,7 +90,7 @@ func _end_press() -> void:
 		emit_signal("ritual_cancelled")
 		return
 
-	var spin_ratio = clamp(abs(accumulated_rotation) / ROTATION_FOR_MAX_BONUS, 0.0, 1.0)
+	var spin_ratio = clamp(abs(accumulated_rotation) / ROTATION_FOR_MAX_BONUS, 0.1, 1.0)
 	emit_signal("condense_resolved", start_position, spin_ratio)
 
 

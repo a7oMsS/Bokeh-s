@@ -1,0 +1,27 @@
+[gd_scene format=3 uid="uid://cyg735dbkbw1q"]
+
+[ext_resource type="Script" uid="uid://c503uh1bdrwsw" path="res://script/ux/trail.gd" id="1_f5a1n"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_f5a1n"]
+blend_mode = 1
+
+[sub_resource type="Curve" id="Curve_f5a1n"]
+_data = [Vector2(0, 0.16071439), 0.0, 1.0775511, 0, 0, Vector2(1, 1), 0.2857138, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="Gradient" id="Gradient_f5a1n"]
+offsets = PackedFloat32Array(0, 0.73046875)
+colors = PackedColorArray(0.74, 0.74, 1, 0, 2.1168277, 2.1168277, 2.844042, 1)
+
+[node name="Trail" type="Line2D" unique_id=2081527438]
+material = SubResource("CanvasItemMaterial_f5a1n")
+width = 25.0
+width_curve = SubResource("Curve_f5a1n")
+gradient = SubResource("Gradient_f5a1n")
+texture_mode = 1
+joint_mode = 2
+begin_cap_mode = 2
+end_cap_mode = 2
+round_precision = 20
+antialiased = true
+script = ExtResource("1_f5a1n")

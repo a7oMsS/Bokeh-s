@@ -19,11 +19,15 @@ run/main_scene="uid://vi06ryyrhsih"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[audio]
+
+buses/default_bus_layout="uid://b3vfmoinc1j05"
+
 [autoload]
 
-EventBusAuto="*res://script/ux/EventBus.gd"
-CondenseAudioManager="*res://script/managers/AudioManager.gd"
-Explorer="*res://script/managers/ExplorerManager.gd"
+EventBusAuto="*res://script/utils/event_bus.gd"
+CondenseAudioManager="*res://script/managers/audio_manager.gd"
+Explorer="*res://script/managers/explorer_manager.gd"
 
 [display]
 
