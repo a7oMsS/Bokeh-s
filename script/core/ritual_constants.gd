@@ -16,3 +16,5 @@ const TIER_PERFECT := "perfect"
 
 ## Audio bus shared by the charge and success voices.
 const AUDIO_BUS_CONDENSE := "Condense"
+## ⚠️ De las simulaciones — 3 rituales buenos consecutivos agotan la barra.
+const CONDENSE_ENERGY_COST := 0.33

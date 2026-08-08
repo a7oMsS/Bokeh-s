@@ -28,7 +28,7 @@ const SPIN_KICK_STRENGTH := 2.0
 
 ## Presentation only — how long until the core visually reads as "full".
 ## The actual success gate lives in InputRitualManager.MIN_HOLD_TIME.
-const HOLD_FOR_GUARANTEED := 0.8
+const HOLD_FOR_GUARANTEED := 1.6
 
 const PERFECT_THRESHOLD := 0.75
 const TRAIL_RADIUS := 125.0
@@ -52,7 +52,7 @@ func begin(pos: Vector2) -> void:
 
 	core.modulate = COLOR_EMBER
 	sparks.modulate = COLOR_EMBER
-	light.color = COLOR_EMBER
+	light.color = COLOR_EMBER * 2.0
 	ring.modulate = COLOR_EMBER * 1.6
 
 	core.scale = Vector2.ONE * SCALE_MIN
@@ -89,7 +89,7 @@ func _process(delta: float) -> void:
 	var charge_color = COLOR_EMBER.lerp(COLOR_CHARGED, progress)
 	var final_color = charge_color.lerp(COLOR_BONUS, quality)
 	core.modulate = final_color
-	sparks.modulate = final_color
+	sparks.modulate = final_color * 3.0
 	light.color = final_color
 	light.energy = lerp(1.2, 2.6, progress) + quality * 0.8
 

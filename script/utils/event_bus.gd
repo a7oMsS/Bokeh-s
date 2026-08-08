@@ -22,3 +22,9 @@ signal figure_spawned(fig: Node)
 # Eventos de ritmo o timing
 @warning_ignore("unused_signal")
 signal timing_hit(kind: String) 
+
+# Sombra
+@warning_ignore("unused_signal")
+signal vignette_spawned(vig: Node, counts_as_spawn: bool)
+@warning_ignore("unused_signal")
+signal vignette_dispersed(vig: Node)

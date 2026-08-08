@@ -1,5 +1,7 @@
-CondenseChargeAudio
+MeshInstance2D
+Node2D
 Node
+CondenseChargeAudio
 Line2D
 RichTextLabel
 Label
@@ -11,5 +13,3 @@ CPUParticles2D
 ProgressBar
 BackBufferCopy
 WorldEnvironment
-TextureProgressBar
-ColorRect

@@ -2,7 +2,7 @@ shader_type canvas_item;
 render_mode blend_add, unshaded;
 
 uniform vec4 color_a : source_color = vec4(1.0, 0.7, 0.4, 1.0);
-uniform int forma;
+uniform int shape;
 uniform float smoothness : hint_range(0.0, 1.0) = 0.085;
 uniform float padding : hint_range(1.0, 3.0) = 1.65;
 
@@ -53,14 +53,14 @@ float sdHeart(vec2 p ){
 }
 
 float sdf_shape(vec2 p) {
-    if (forma == 0) return sdCircle(p);
-    if (forma == 1) return sdBox(p);
-    if (forma == 2) return sdEquilateralTriangle(p);
-    if (forma == 3) return sdStar5(p);
-    if (forma == 4) return sdStar4(p);
-    if (forma == 5) return sdHexagon(p);
-    if (forma == 6) return sdRhombus(p);
-    if (forma == 7) return sdHeart(p);
+    if (shape == 0) return sdCircle(p);
+    if (shape == 1) return sdBox(p);
+    if (shape == 2) return sdEquilateralTriangle(p);
+    if (shape == 3) return sdStar5(p);
+    if (shape == 4) return sdStar4(p);
+    if (shape == 5) return sdHexagon(p);
+    if (shape == 6) return sdRhombus(p);
+    if (shape == 7) return sdHeart(p);
     return sdCircle(p);
 }
 
@@ -71,9 +71,9 @@ void fragment() {
     float d = sdf_shape(uv * 2.0 * padding);
     
     float soft = max(smoothness, 0.035);
-	if (forma == 3 || forma == 4) {
+	if (shape == 3 || shape == 4) {
 	    soft = 0.065;
-	} else if (forma == 5 || forma == 1) {
+	} else if (shape == 5 || shape == 1) {
 	    soft = 0.09;
 	}
     

@@ -1,0 +1,198 @@
+extends Node
+class_name ShadowManager
+
+## Paralelo a FigureManager: este manager decide CUÁNDO y DÓNDE nace un
+## Vignette y qué variante le toca. No resuelve combate — eso vive en cada
+## instancia (ver nota de arquitectura en vignette.gd), y tampoco dibuja
+## nada — el shader de humo llega con la escena de Vignette.
+
+@export var vignette_scene = preload("res://scenes/objects/vignette.tscn")
+
+var active_vignette: Array = []
+
+## Tope global en pantalla. Escala por diseño de mundo, no por maestría del
+## Explorador — a diferencia del cupo de Bokeh, que sí crece con progresión.
+@export var vignette_limit := 16
+
+## counts_as_spawn: false para los Vignette ambientales del inicio del mundo
+## (nunca restan luminancia), true para los que nacen durante la partida.
+signal vignette_spawned(vig: Node, counts_as_spawn: bool)
+signal vignette_dispersed(vig: Node)
+
+
+# ======== Catálogo de variantes ========
+# Solo tres ejes: tamaño, dureza, personalidad — nunca forma ni color.
+# Sin catálogo bloqueado/desbloqueado como en FigureManager: los Vignette no
+# escalan por progreso del jugador, solo por diseño del mundo.
+var all_hardness: Array[VignetteEnums.Hardness] = [
+	VignetteEnums.Hardness.SOFT, VignetteEnums.Hardness.NORMAL, VignetteEnums.Hardness.DENSE,
+]
+var all_sizes: Array[VignetteEnums.SizeCategory] = [
+	VignetteEnums.SizeCategory.SMALL, VignetteEnums.SizeCategory.MEDIUM, VignetteEnums.SizeCategory.LARGE,
+]
+# PersonalityType.STATIC es el único activo por ahora — ver Vignette.gd.
+
+
+# ======== Ritmo de aparición ========
+@export var spawn_interval := 4.0
+@export var initial_count := 8
+
+var _time_since_last_spawn := 0.0
+var _world_active := false
+var _figure_manager: FigureManager
+var vignette_container: Node
+
+
+func _ready() -> void:
+	set_process(false)  # arranca inactivo; start_world() lo activa
+
+
+## Llamar al iniciar un mundo nuevo. fm es el FigureManager de esa partida —
+## se usa solo para leer posiciones de Bokeh activos al decidir dónde nace
+## el próximo Vignette, nunca para modificarlo.
+func start_world(fm: FigureManager, container: Node) -> void:
+	_figure_manager = fm
+	vignette_container = container
+	active_vignette.clear()
+	_time_since_last_spawn = 0.0
+	_world_active = true
+	set_process(true)
+	_spawn_initial_population()
+
+
+func stop_world() -> void:
+	_world_active = false
+	set_process(false)
+	for vig in active_vignette.duplicate():
+		if is_instance_valid(vig):
+			vig.queue_free()
+	active_vignette.clear()
+
+
+func _process(delta: float) -> void:
+	_time_since_last_spawn += delta
+	if _time_since_last_spawn >= spawn_interval:
+		_time_since_last_spawn = 0.0
+		_try_spawn_procedural()
+
+
+# ---------------- Población inicial ----------------
+
+## Ambiental: ya están ahí desde el segundo 0. A propósito NO pasa por
+## _try_spawn_procedural() — los iniciales no cuentan como "spawn" para la
+## economía de Luminancia, solo los que nacen durante la partida.
+func _spawn_initial_population() -> void:
+	for i in range(initial_count):
+		_spawn_at(_random_edge_biased_position(), false)
+
+
+# ---------------- Spawn procedural ----------------
+
+func _try_spawn_procedural() -> void:
+	if active_vignette.size() >= vignette_limit:
+		return
+	_spawn_at(_find_least_defended_position(), true)
+
+
+## Entre varios candidatos sesgados a los bordes, elige el más lejano a
+## cualquier Bokeh activo — "se filtra por donde no hay luz".
+func _find_least_defended_position() -> Vector2:
+	const CANDIDATES := 10
+	var best_pos := Vector2.ZERO
+	var best_score := -1.0
+	for i in range(CANDIDATES):
+		var candidate = _random_edge_biased_position()
+		var score = _distance_to_nearest_bokeh(candidate)
+		if score > best_score:
+			best_score = score
+			best_pos = candidate
+	return best_pos
+
+
+func _distance_to_nearest_bokeh(pos: Vector2) -> float:
+	if _figure_manager == null or _figure_manager.active_figures.is_empty():
+		return INF
+	var nearest := INF
+	for fig in _figure_manager.active_figures:
+		if is_instance_valid(fig):
+			nearest = min(nearest, pos.distance_to(fig.global_position))
+	return nearest
+
+
+## Sesga la posición hacia los cuatro bordes de pantalla, nunca al tercio
+## central — coherente con el propio nombre Vignette: el viñeteado
+## fotográfico real oscurece primero las esquinas, no el centro.
+func _random_edge_biased_position() -> Vector2:
+	var screen = DisplayServer.window_get_size()
+	var margin := 60.0
+	var side := randi() % 4
+	match side:
+		0: return Vector2(randf_range(margin, screen.x - margin), randf_range(margin, screen.y * 0.25))
+		1: return Vector2(randf_range(margin, screen.x - margin), randf_range(screen.y * 0.75, screen.y - margin))
+		2: return Vector2(randf_range(margin, screen.x * 0.25), randf_range(margin, screen.y - margin))
+		_: return Vector2(randf_range(screen.x * 0.75, screen.x - margin), randf_range(margin, screen.y - margin))
+
+
+# ---------------- Instanciación ----------------
+
+func _spawn_at(pos: Vector2, counts_as_spawn: bool) -> Node:
+	if vignette_scene == null:
+		push_warning("ShadowManager: vignette_scene no está asignado")
+		return null
+
+	var vig = vignette_scene.instantiate()
+	var params = generate_params(pos)
+	vig.init(params)
+	vignette_container.add_child(vig)
+	active_vignette.append(vig)
+	vig.tree_exiting.connect(_on_vignette_tree_exiting.bind(vig))
+
+	emit_signal("vignette_spawned", vig, counts_as_spawn)
+	EventBusAuto.emit_signal("vignette_spawned", vig, counts_as_spawn)
+	return vig
+
+
+func _on_vignette_tree_exiting(vig: Node) -> void:
+	active_vignette.erase(vig)
+	emit_signal("vignette_dispersed", vig)
+	EventBusAuto.emit_signal("vignette_dispersed", vig)
+
+
+# ---------------- Variantes ----------------
+
+## A diferencia de Figure.generate_params(), no hay forma ni color que
+## resolver, y personality no se incluye — Vignette.gd por ahora solo corre
+## en su estado Static, sin ninguna rama que lea este dato.
+func generate_params(position: Vector2) -> Dictionary:
+	var size_category = get_random_size_category()
+	return {
+		"position": position,
+		"hardness": get_random_hardness(),
+		"size_category": size_category,
+		"size": get_scale_by_category(size_category),
+	}
+
+
+func get_random_hardness() -> VignetteEnums.Hardness:
+	return all_hardness[randi() % all_hardness.size()]
+
+
+func get_random_size_category() -> VignetteEnums.SizeCategory:
+	return all_sizes[randi() % all_sizes.size()]
+
+
+## Escala visual por categoría — mucho más sutil que el rango de tamaños de
+## Bokeh, a propósito: Vignette debe leerse sobrio, no llamativo.
+## ⚠️ Rangos propuestos por mí, sin confirmar contigo.
+func get_scale_by_category(category: VignetteEnums.SizeCategory) -> float:
+	match category:
+		VignetteEnums.SizeCategory.SMALL: return randf_range(0.75, 0.9)
+		VignetteEnums.SizeCategory.MEDIUM: return randf_range(0.9, 1.1)
+		VignetteEnums.SizeCategory.LARGE: return randf_range(1.1, 1.3)
+		_: return get_scale_by_category(get_random_size_category())
+
+
+# ---------------- Consulta ----------------
+
+func get_active_count() -> int:
+	return active_vignette.size()

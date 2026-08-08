@@ -30,14 +30,14 @@ var all_personalities: Array[FigureEnums.PersonalityType] = [
 # ======== Unlocked subset ========
 var shapes: Array[FigureEnums.Shape] = [FigureEnums.Shape.CIRCLE]
 var styles: Array[FigureEnums.Style] = [FigureEnums.Style.SOLID]
-var sizes: Array[FigureEnums.SizeCategory] = [FigureEnums.SizeCategory.LARGE]
+var sizes: Array[FigureEnums.SizeCategory] = [FigureEnums.SizeCategory.SMALL]
 var personalities: Array[FigureEnums.PersonalityType] = [
-	FigureEnums.PersonalityType.VIBRATION, FigureEnums.PersonalityType.COLOR_SHIFT, FigureEnums.PersonalityType.BOUNCE
+	FigureEnums.PersonalityType.STATIC
 ]
 
 # ======== Gesture-quality bonuses (spin_ratio, 0-1) ========
-const QUALITY_SIZE_BONUS_MAX := 0.35
-const QUALITY_BRIGHTEN_MAX := 0.25
+const QUALITY_SIZE_BONUS_MAX := 0.15
+const QUALITY_BRIGHTEN_MAX := 0.2
 
 # ======== Depth drift ========
 const DEPTH_FOCUS_CHANCE_MIN := 0.33
@@ -102,8 +102,8 @@ func get_random_color() -> Color:
 	else:
 		hue = hue_magenta
 
-	var saturation = randf_range(0.5, 1.0)
-	var value = randf_range(0.5, 1.0)
+	var saturation = randf_range(0.75, 1.0)
+	var value = randf_range(0.4, 0.6)
 	return Color.from_hsv(hue, saturation, value)
 
 func get_similar_color(base_color: Color) -> Color:
@@ -137,9 +137,9 @@ func get_size_by_category(category: FigureEnums.SizeCategory) -> float:
 		FigureEnums.SizeCategory.SMALL:
 			return randf_range(reference * 0.075, reference * 0.10)
 		FigureEnums.SizeCategory.MEDIUM:
-			return randf_range(reference * 0.14, reference * 0.18)
+			return randf_range(reference * 0.12, reference * 0.18)
 		FigureEnums.SizeCategory.LARGE:
-			return randf_range(reference * 0.25, reference * 0.35)
+			return randf_range(reference * 0.19, reference * 0.24)
 		_:
 			return get_random_size()
 

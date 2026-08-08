@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://del3na45h6114" path="res://script/managers/luminance_manager.gd" id="7_v0v65"]
 [ext_resource type="Script" uid="uid://d4dk1j4bi3h2r" path="res://script/managers/score_manager.gd" id="8_w3pu8"]
 [ext_resource type="Script" uid="uid://b6rjyu2tdrla8" path="res://script/managers/audio_manager.gd" id="9_ndiqk"]
+[ext_resource type="Script" uid="uid://d1eiotc0vs7ut" path="res://script/managers/shadow_manager.gd" id="10_mgwo4"]
 [ext_resource type="PackedScene" uid="uid://dvip4th6ymc8s" path="res://scenes/ux/bg.tscn" id="10_tpf3y"]
 [ext_resource type="Texture2D" uid="uid://7w4m6m5sc2ci" path="res://assets/images/grunge_texture.png" id="11_etpvq"]
 [ext_resource type="Texture2D" uid="uid://lpcyy6qah0v8" path="res://assets/images/basic_particles.png" id="12_ralht"]
@@ -71,7 +72,7 @@ gravity = Vector3(0, 0, 0)
 linear_accel_min = 0.99999774
 linear_accel_max = 0.99999774
 scale_min = 0.01
-scale_max = 0.099999994
+scale_max = 0.19999999
 scale_curve = SubResource("CurveTexture_vcs5x")
 color = Color(0.2561856, 0.2561856, 0.2561856, 1)
 color_ramp = SubResource("GradientTexture1D_kb861")
@@ -161,6 +162,9 @@ script = ExtResource("8_w3pu8")
 [node name="AudioManager" type="Node" parent="Managers" unique_id=1916758120]
 script = ExtResource("9_ndiqk")
 
+[node name="ShadowManager" type="Node" parent="Managers" unique_id=632995959]
+script = ExtResource("10_mgwo4")
+
 [node name="ClicArea" type="ColorRect" parent="." unique_id=704783883]
 layout_mode = 1
 anchors_preset = 15
@@ -214,6 +218,7 @@ randomness = 0.2
 process_material = SubResource("ParticleProcessMaterial_t3fqk")
 
 [node name="CanvasModulate" type="CanvasModulate" parent="ClicArea" unique_id=975298817]
+color = Color(0.07293195, 0.068367034, 6.016344e-09, 1)
 
 [node name="hud" type="CanvasLayer" parent="." unique_id=464876629]
 script = ExtResource("13_0k6rw")

@@ -1,5 +1,13 @@
 extends Node
-class_name ScoreManager
+class_name MasteryManager
+
+## Reconversión de ScoreManager: la lógica de tiers y combo se queda tal
+## cual estaba. Lo nuevo es todo el sistema de mastery/niveles, que reutiliza
+## el mismo evento de éxito (_register_success) para no duplicar conexiones.
+##
+## Nivel 4 en adelante no existe en este demo a propósito -- según lo
+## acordado, eso depende de superar el Mundo 1, algo que todavía no está
+## construido. mastery_level se congela en MASTERY_MAX_LEVEL hasta entonces.
 
 const TIER_GOOD_MIN := 0.35
 const TIER_PERFECT_MIN := 0.75
@@ -25,6 +33,36 @@ var _time_since_last_success: float = 999.0
 
 signal score_updated(total: float, delta: float)
 signal combo_updated(combo: int, max_combo: int)
+
+
+# ======== Mastery / niveles ========
+const MASTERY_PER_INVOKE := 1.0
+const VIGNETTE_DISPERSE_MASTERY := 0.2
+const ELITE_DEFEATED_MASTERY := 5.0
+
+## Nivel 1 = tus primeros 5 Bokeh, confirmado. El crecimiento exponencial
+## y el factor 2.5 son ⚠️ propuesta mía -- da 5 / 12.5 / 31.25 de umbral
+## acumulado para los niveles 1/2/3.
+const MASTERY_LEVEL_BASE := 5.0
+const MASTERY_LEVEL_GROWTH := 2.5
+const MASTERY_MAX_LEVEL := 3
+
+## Cupo de Bokeh al iniciar, antes de cualquier nivel ganado. Cada nivel
+## suma +1 encima de esto.
+const BASE_FIGURE_LIMIT := 5
+
+var mastery: float = 0.0
+var mastery_level: int = 0
+
+signal mastery_changed(current: float, level: int)
+
+@onready var figure_manager = $"../FigureManager"
+
+
+func _ready() -> void:
+	figure_manager.figure_limit = BASE_FIGURE_LIMIT + mastery_level
+	EventBusAuto.vignette_dispersed.connect(_on_vignette_dispersed)
+	emit_signal("mastery_changed", mastery, mastery_level)
 
 
 func _process(delta: float) -> void:
@@ -59,6 +97,10 @@ func _register_success(quality: float) -> void:
 	var combo_mult: float = min(1.0 + (combo - 1) * COMBO_STEP, COMBO_MULT_MAX)
 	var gained := BASE_SCORE * tier_mult * combo_mult
 	score += gained
+
+	# Mastery usa el mismo tier_mult que el puntaje, pero SIN combo --
+	# "generar un bokeh" da +1, los tiers multiplican, nada más.
+	_add_mastery(MASTERY_PER_INVOKE * tier_mult)
 
 	emit_signal("score_updated", score, gained)
 	emit_signal("combo_updated", combo, max_combo)
@@ -95,3 +137,47 @@ func get_stats() -> Dictionary:
 		"score": score, "combo": combo, "max_combo": max_combo,
 		"good": count_good, "perfect": count_perfect, "normal": count_normal,
 	}
+
+
+# ---------------- Mastery ----------------
+
+func _on_vignette_dispersed(_vig: Node) -> void:
+	_add_mastery(VIGNETTE_DISPERSE_MASTERY)
+
+
+func _mastery_threshold(level: int) -> float:
+	return MASTERY_LEVEL_BASE * pow(MASTERY_LEVEL_GROWTH, level - 1)
+
+
+func _add_mastery(amount: float) -> void:
+	if mastery_level >= MASTERY_MAX_LEVEL:
+		return
+	mastery += amount
+	emit_signal("mastery_changed", mastery, mastery_level)
+	_check_level_up()
+
+
+func _check_level_up() -> void:
+	if mastery_level >= MASTERY_MAX_LEVEL:
+		return
+	if mastery >= _mastery_threshold(mastery_level + 1):
+		mastery_level += 1
+		_apply_level_unlock(mastery_level)
+		figure_manager.figure_limit = BASE_FIGURE_LIMIT + mastery_level
+		EventBusAuto.emit_signal("level_up", mastery_level, _unlock_name_for_level(mastery_level))
+		emit_signal("mastery_changed", mastery, mastery_level)
+
+
+func _apply_level_unlock(level: int) -> void:
+	match level:
+		1: figure_manager.enable_shape(FigureEnums.Shape.SQUARE)
+		2: figure_manager.enable_personality(FigureEnums.PersonalityType.BLINK)
+		3: figure_manager.enable_size(FigureEnums.SizeCategory.MEDIUM)
+
+
+func _unlock_name_for_level(level: int) -> String:
+	match level:
+		1: return "Forma: Cuadrado"
+		2: return "Personalidad: Parpadeo"
+		3: return "Tamaño: Mediano"
+		_: return ""

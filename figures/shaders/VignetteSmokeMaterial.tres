@@ -1,0 +1,12 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://bqwd38ryhcvc3"]
+
+[ext_resource type="Shader" uid="uid://dj7d1eyj0toiq" path="res://figures/shaders/vignette_shader.gdshader" id="1_mb1eh"]
+
+[resource]
+shader = ExtResource("1_mb1eh")
+shader_parameter/color_dark = Color(0.13, 0.13, 0.13, 1)
+shader_parameter/color_bleed = Color(0.38, 0, 0.0063332366, 1)
+shader_parameter/damage_ratio = 0.0
+shader_parameter/fog_speed = 0.15
+shader_parameter/fog_scale = 2.494000070965
+shader_parameter/edge_softness = 0.2430000115425

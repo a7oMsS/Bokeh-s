@@ -8,7 +8,7 @@ class_name Figure
 
 var global_params: Dictionary
 
-@export var lifetime: float = 45.0
+@export var lifetime: float = 30.0
 @export var lifetime_enabled: bool = true
 
 @export var base_materials := {
@@ -31,20 +31,43 @@ var personality: FigurePersonality
 
 ## Blur is symmetric: as soft when Near as when Far — only Mid is sharp.
 const DEPTH_VISUALS := {
-	FigureEnums.Depth.NEAR: {"smoothness": 0.3,  "alpha": 1.0,  "scale_mult": 2.0, "z_index": 20, "energy_mult": 0.3, "mesh_mult": 1.6},
+	FigureEnums.Depth.NEAR: {"smoothness": 0.3,  "alpha": 1.0,  "scale_mult": 1.5, "z_index": 20, "energy_mult": 0.3, "mesh_mult": 1.6},
 	FigureEnums.Depth.MID:  {"smoothness": 0.02, "alpha": 0.75, "scale_mult": 1.0, "z_index": 10, "energy_mult": 1.1, "mesh_mult": 1.0},
 	FigureEnums.Depth.FAR:  {"smoothness": 0.3,  "alpha": 0.32, "scale_mult": 0.5, "z_index": 1,  "energy_mult": 0.6, "mesh_mult": 0.7},
 }
 
 ## Baseline burst tuning, scaled per-figure in _configure_particles().
-## ⚠️ Verifica estos dos contra los valores reales de tu escena — no
-## pude confirmarlos por la caída de la búsqueda del repo.
 const PARTICLE_BASE_VELOCITY_MIN := 210.0
 const PARTICLE_BASE_VELOCITY_MAX := 454.0
 const PARTICLE_BASE_AMOUNT := 40.0
 const PARTICLE_VELOCITY_SIZE_MULT_MAX := 2.2
 const PARTICLE_VELOCITY_QUALITY_MULT_MAX := 1.3
 const PARTICLE_AMOUNT_QUALITY_MULT_MAX := 1.4
+
+## ⚠️ Rango de tamaño→integridad, propuesta sin confirmar.
+const INTEGRIDAD_BASE := 60.0
+const INTEGRIDAD_SIZE_MULT_MIN := 0.7
+const INTEGRIDAD_SIZE_MULT_MAX := 1.3
+
+## Poder ofensivo contra Vignette. 30/7 es el valor confirmado para Mid;
+## Near y Far golpean menos por estar fuera de foco — multiplicadores ⚠️
+## propuestos, sin confirmar.
+const POWER_BASE := 30.0 / 7.0
+const POWER_BY_DEPTH := {
+	FigureEnums.Depth.NEAR: 0.5,
+	FigureEnums.Depth.MID: 1.0,
+	FigureEnums.Depth.FAR: 0.4,
+}
+
+## 5 ticks a 70bpm, convertidos a segundos porque Figure no corre su propio
+## reloj de combate — solo recuerda cuánto hace que algo lo golpeó.
+const REGEN_TIME_REQUIRED := 5.0 * (60.0 / 70.0)
+const REGEN_RATE := 2.5  # /seg — menor que el daño recibido, según acordamos
+
+## ⚠️ Límites de cuánto se encoge/oscurece por daño, sin confirmar. Nunca
+## llegan a 0 — eso lo decide disappear_fast(), no este ajuste visual.
+const DAMAGE_SCALE_MIN := 0.6
+const DAMAGE_DIM_MIN := 0.35
 
 var _padding := 1.65
 var _base_color_a: Color
@@ -53,11 +76,24 @@ var _size: float
 var _max_size: float
 
 var _depth_target: FigureEnums.Depth = FigureEnums.Depth.MID
+var _current_depth: FigureEnums.Depth = FigureEnums.Depth.MID
 var _depth_hold := 2.0
 var _depth_drift_duration := 4.0
 var _depth_timer := 0.0
 var _has_drifted := false
 var _has_appeared := false
+
+## Estado de integridad y daño.
+var integridad: float
+var max_integridad: float
+var _time_since_hit := 0.0
+var _damage_ratio := 0.0  # 0 = integridad completa, 1 = a punto de desaparecer
+
+## Línea base que pone la profundidad, separada del ajuste por daño — nunca
+## se pisan entre sí, siempre se combinan en _update_combined_visuals().
+var _depth_scale_mult := 1.0
+var _depth_modulate := Color.WHITE
+var _depth_light_color := Color.WHITE
 
 
 ## Stores incoming spawn data only. Runs before this node enters the tree
@@ -73,8 +109,14 @@ func init(params: Dictionary) -> void:
 	_depth_hold = params.get("depth_hold", 2.0)
 	_depth_drift_duration = params.get("depth_drift_duration", 4.0)
 
+	var size_mult = lerp(INTEGRIDAD_SIZE_MULT_MIN, INTEGRIDAD_SIZE_MULT_MAX, _size / _max_size)
+	max_integridad = INTEGRIDAD_BASE * size_mult
+	integridad = max_integridad
+
 
 func _ready() -> void:
+	add_to_group("bokeh")
+
 	_setup_shader(global_params)
 	_apply_depth_visuals(global_params.get("depth", FigureEnums.Depth.MID), 0.0)
 	position = global_params.position
@@ -120,46 +162,81 @@ func disable_lifetime() -> void:
 ## blur, scale, mesh size and light color. Never color_a/color_b.
 ## duration = 0.0  → instant (used at birth)
 ## duration > 0.0  → animates toward that state (used when drifting)
+##
+## A diferencia de la versión anterior, esto ya NO escribe scale/modulate/
+## point_light.color directamente — guarda la línea base de profundidad y
+## deja que _update_combined_visuals() la mezcle con el daño actual.
 func _apply_depth_visuals(depth: FigureEnums.Depth, duration: float) -> void:
 	var v: Dictionary = DEPTH_VISUALS[depth]
+	_current_depth = depth
 
 	var normalized_size = _size / _max_size
 	var energy = lerp(0.6, 0.8, normalized_size) * v.energy_mult
 
 	var target_modulate := Color(energy, energy, energy, v.alpha)
 	var target_light_color = _base_color_a * energy
-	var target_scale = Vector2.ONE * v.scale_mult
+	var target_scale_mult: float = v.scale_mult
 	var target_mesh_size = Vector2.ONE * (_size * _padding * v.mesh_mult)
 
 	z_index = v.z_index
 
 	if duration <= 0.0:
-		scale = target_scale
-		modulate = target_modulate
+		_depth_scale_mult = target_scale_mult
+		_depth_modulate = target_modulate
+		_depth_light_color = target_light_color
 		shader_material.set_shader_parameter("smoothness", v.smoothness)
-		point_light.color = target_light_color
 		body_mesh.mesh.size = target_mesh_size
+		_update_combined_visuals()
 		return
 
 	var start_smoothness = shader_material.get_shader_parameter("smoothness")
-	var start_light_color = point_light.color
+	var start_scale_mult = _depth_scale_mult
+	var start_modulate = _depth_modulate
+	var start_light_color = _depth_light_color
 	var start_mesh_size = body_mesh.mesh.size
 
 	var tween := create_tween()
 	tween.set_parallel(true)
-	tween.tween_property(self, "scale", target_scale, duration) \
-		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(self, "modulate", target_modulate, duration) \
-		.set_trans(Tween.TRANS_SINE)
+	tween.tween_method(func(t: float):
+		_depth_scale_mult = lerp(start_scale_mult, target_scale_mult, t)
+		_depth_modulate = start_modulate.lerp(target_modulate, t)
+		_update_combined_visuals()
+	, 0.0, 1.0, duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 	tween.tween_method(func(t: float):
 		shader_material.set_shader_parameter("smoothness", lerp(start_smoothness, v.smoothness, t))
-		point_light.color = start_light_color.lerp(target_light_color, t)
+		_depth_light_color = start_light_color.lerp(target_light_color, t)
 		body_mesh.mesh.size = start_mesh_size.lerp(target_mesh_size, t)
+		_update_combined_visuals()
 	, 0.0, 1.0, duration)
 
 
+## Único punto que de verdad escribe scale/modulate/point_light.color —
+## combina la línea base de profundidad con el ajuste por daño, para que
+## ninguno de los dos sistemas pise al otro.
+func _update_combined_visuals() -> void:
+	var damage_scale = lerp(1.0, DAMAGE_SCALE_MIN, _damage_ratio)
+	scale = Vector2.ONE * _depth_scale_mult * damage_scale
+
+	var damage_dim = lerp(1.0, DAMAGE_DIM_MIN, _damage_ratio)
+	modulate = Color(
+		_depth_modulate.r * damage_dim,
+		_depth_modulate.g * damage_dim,
+		_depth_modulate.b * damage_dim,
+		_depth_modulate.a
+	)
+	
+
+	point_light.color = _depth_light_color * damage_dim
+
+
 func _process(delta: float) -> void:
+	_time_since_hit += delta
+	if _time_since_hit >= REGEN_TIME_REQUIRED and integridad < max_integridad:
+		integridad = min(max_integridad, integridad + REGEN_RATE * delta)
+		_damage_ratio = 1.0 - (integridad / max_integridad)
+		_update_combined_visuals()
+
 	if not _has_appeared or _has_drifted:
 		return
 
@@ -170,6 +247,25 @@ func _process(delta: float) -> void:
 			_play_settle_pulse()
 		else:
 			_apply_depth_visuals(_depth_target, _depth_drift_duration)
+
+
+## Llamado por Vignette.gd — ver nota de arquitectura en vignette.gd:
+## Vignette resuelve el combate, Figure solo recibe y reacciona.
+func take_damage(amount: float) -> void:
+	if amount <= 0.0:
+		return
+	integridad -= amount
+	_time_since_hit = 0.0
+	_damage_ratio = clamp(1.0 - (integridad / max_integridad), 0.0, 1.0)
+	_update_combined_visuals()
+	if integridad <= 0.0:
+		disappear_fast()
+
+
+## Poder actual contra Vignette — depende de la profundidad en la que este
+## Bokeh está ahora mismo, no de su tamaño ni personalidad.
+func get_power() -> float:
+	return POWER_BASE * POWER_BY_DEPTH.get(_current_depth, 1.0)
 
 
 func _play_settle_pulse() -> void:
@@ -228,7 +324,7 @@ func _configure_particles() -> void:
 	pop_particles.scale_amount_min = normalized_size/10
 	pop_particles.scale_amount_max = normalized_size/3
 	pop_particles.scale = (Vector2.ONE * remap(_size, 50.0, 120.0, 0.5, 1.0))
-	
+
 func _set_personality(personality_type: FigureEnums.PersonalityType) -> void:
 	if not figure_personalities.has(personality_type):
 		push_warning("Unknown personality: %s" % personality_type)

@@ -1,0 +1,12 @@
+[gd_scene format=3 uid="uid://cn3bxaaxyi6fo"]
+
+[ext_resource type="Script" uid="uid://b4ikwudfxde74" path="res://script/figures/vignette.gd" id="1_e52v5"]
+[ext_resource type="Material" uid="uid://bqwd38ryhcvc3" path="res://figures/shaders/VignetteSmokeMaterial.tres" id="2_1nbex"]
+
+[node name="Vignette" type="Node2D" unique_id=1928826740]
+script = ExtResource("1_e52v5")
+base_material = ExtResource("2_1nbex")
+
+[node name="Body" type="Node2D" parent="." unique_id=2089469908]
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="Body" unique_id=2147270182]

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://buljx64bbuwq2" path="res://script/figures/figure.gd" id="1_a3t0r"]
 [ext_resource type="Texture2D" uid="uid://lpcyy6qah0v8" path="res://assets/images/basic_particles.png" id="2_24np7"]
 [ext_resource type="Script" uid="uid://dpovtafwt1mph" path="res://script/figures/fall_trail.gd" id="2_vcs5x"]
-[ext_resource type="Texture2D" uid="uid://ccywsa7ah10is" path="res://assets/images/2d_lights_and_shadows_neutral_point_light.webp" id="3_24np7"]
+[ext_resource type="Texture2D" uid="uid://dixsrrlitpelm" path="res://assets/themes/new_gradient_texture_2d.tres" id="4_vcs5x"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_a3t0r"]
 blend_mode = 1
@@ -66,6 +66,6 @@ joint_mode = 1
 script = ExtResource("2_vcs5x")
 
 [node name="PointLight2D" type="PointLight2D" parent="." unique_id=1505674007]
-energy = 3.91
-texture = ExtResource("3_24np7")
-texture_scale = 3.42
+energy = 4.2
+texture = ExtResource("4_vcs5x")
+texture_scale = 5.0

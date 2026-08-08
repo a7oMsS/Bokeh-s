@@ -4,7 +4,7 @@ class_name ExplorerManager
 # -------------------------------------------------
 # Parámetros base
 # -------------------------------------------------
-@export var regen_rate := 0.08        # energía por segundo
+@export var regen_rate := 0.06        # energía por segundo
 @export var soft_cap := 1.0           # referencia, no límite duro
 @export var min_energy := 0.0
 
@@ -36,7 +36,6 @@ func _regenerate(delta: float) -> void:
 
 # ¿Hay energía suficiente para intentar algo?
 func can_afford(amount: float) -> bool:
-	print(reserved)
 	return energy - reserved >= amount
 
 

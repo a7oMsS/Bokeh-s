@@ -1,114 +1,97 @@
 extends Node
 class_name LuminanceManager
 
-signal luminance_changed(current: float, max_value: float)
-signal threshold_reached(threshold: float, level: int)
-signal condensation_triggered(level: int)
+## Reescritura completa del sistema viejo (niveles de condensación, umbrales
+## repetidos, bonus por cúmulo, decaimiento por inactividad). Todo eso queda
+## reemplazado por el modelo que cerramos en las simulaciones:
+##
+##   Energia_total = techo fijo del mundo, nunca crece
+##   current_luminance = el único valor que se guarda
+##   Sombra = Energia_total - current_luminance   (derivado, nunca se guarda)
+##
+## Eventos:
+##   invocar un Bokeh:              +12
+##   cada Bokeh vivo, por segundo:  +1
+##   nace un Vignette nuevo:        -8   (los ambientales del inicio NO cuentan)
+##   cada Vignette vivo, por seg.:  -0.5
+##   dispersar un Vignette:         +3
+##
+## El Élite queda pendiente a propósito — no hay ningún gancho para él
+## todavía, ni siquiera comentado.
 
-@export var starting_luminance: float = 0.0
-@export var thresholds := [100, 200, 500, 1000]
-@export var threshold_growth_factor: float = 1.5
+signal luminance_changed(current: float, max_value: float)
+signal world_purified()
+
+@export var energia_total: float = 1500.0
 
 var current_luminance: float = 0.0
-var max_luminance: float = 9999.0
 
-var current_limit: int = 5
-var luminance_per_figure_base: float = 12.0
-var passive_per_second_per_figure: float = 1.8
+const BOKEH_INVOKE_BONUS := 12.0
+const BOKEH_PASSIVE_PER_SECOND := 1.0
+const VIGNETTE_SPAWN_HIT := 8.0
+const VIGNETTE_PASSIVE_PER_SECOND := 0.5
+const VIGNETTE_DISPERSE_BONUS := 3.0
 
-var time_since_last_spawn: float = 0.0
-var decay_delay: float = 12.0
-var decay_rate: float = 0.8
-
-var condensation_level: int = 0
+var _purified := false
 
 @onready var figure_manager = $"../FigureManager"
+@onready var shadow_manager = $"../ShadowManager"
 
 
-func _ready():
-	current_luminance = starting_luminance
-	figure_manager.figure_spawned.connect(_on_figure_spawned)
-	emit_signal("luminance_changed", current_luminance, _get_threshold_for_level(condensation_level))
+func _ready() -> void:
+	figure_manager.figure_spawned.connect(_on_bokeh_invoked)
+	shadow_manager.vignette_spawned.connect(_on_vignette_spawned)
+	shadow_manager.vignette_dispersed.connect(_on_vignette_dispersed)
+	emit_signal("luminance_changed", current_luminance, energia_total)
 
 
-func _process(delta: float):
-	if figure_manager.active_figures.is_empty():
+func _process(delta: float) -> void:
+	if _purified:
 		return
 
-	time_since_last_spawn += delta
+	var bokeh_count = figure_manager.active_figures.size()
+	var vignette_count = shadow_manager.active_vignette.size()
 
-	var active_count = figure_manager.active_figures.size()
-	var passive_gain = passive_per_second_per_figure * active_count
-	var cluster_bonus = _calculate_cluster_bonus() * active_count
-	current_luminance += (passive_gain + cluster_bonus) * delta
-
-	if time_since_last_spawn > decay_delay:
-		var decay_amount = decay_rate * (time_since_last_spawn - decay_delay) * delta
-		current_luminance -= decay_amount
-
-	current_luminance = clamp(current_luminance, 0.0, max_luminance)
-
-	emit_signal("luminance_changed", current_luminance, _get_threshold_for_level(condensation_level))
-	_check_thresholds()
+	var net_per_second = (BOKEH_PASSIVE_PER_SECOND * bokeh_count) - (VIGNETTE_PASSIVE_PER_SECOND * vignette_count)
+	_apply_delta(net_per_second * delta)
 
 
-func _on_figure_spawned(_fig: Node):
-	time_since_last_spawn = 0.0
-	current_luminance += luminance_per_figure_base
-	emit_signal("luminance_changed", current_luminance, _get_threshold_for_level(condensation_level))
-	_check_thresholds()
+func _on_bokeh_invoked(_fig: Node) -> void:
+	_apply_delta(BOKEH_INVOKE_BONUS)
 
 
-func _calculate_cluster_bonus() -> float:
-	var count = figure_manager.active_figures.size()
-	if count >= 8:
-		return 1.4
-	elif count >= 5:
-		return 0.9
-	elif count >= 3:
-		return 0.5
-	return 0.0
+## counts_as_spawn es false para los Vignette ambientales del inicio del
+## mundo — esos ya están ahí, no "nacen", así que nunca restan.
+func _on_vignette_spawned(_vig: Node, counts_as_spawn: bool) -> void:
+	if counts_as_spawn:
+		_apply_delta(-VIGNETTE_SPAWN_HIT)
 
 
-func _check_thresholds():
-	var target = _get_threshold_for_level(condensation_level)
-
-	if current_luminance >= target:
-		condensation_level += 1
-		current_luminance = 0.0
-		_trigger_condensation(condensation_level)
-
-		current_limit = 5 + (condensation_level * 8)
-		figure_manager.figure_limit = current_limit
-
-		emit_signal("threshold_reached", target, condensation_level)
+func _on_vignette_dispersed(_vig: Node) -> void:
+	_apply_delta(VIGNETTE_DISPERSE_BONUS)
 
 
-func _trigger_condensation(level: int):
-	emit_signal("condensation_triggered", level)
+func _apply_delta(amount: float) -> void:
+	if _purified:
+		return
+
+	current_luminance = clamp(current_luminance + amount, 0.0, energia_total)
+	emit_signal("luminance_changed", current_luminance, energia_total)
+
+	if current_luminance >= energia_total:
+		_purified = true
+		emit_signal("world_purified")
 
 
-## Hand-tuned thresholds for the first levels; beyond the list, scales
-## geometrically so the game never runs out of a threshold to check.
-func _get_threshold_for_level(level: int) -> float:
-	if level < thresholds.size():
-		return thresholds[level]
-	var last = thresholds[thresholds.size() - 1]
-	var extra_levels = level - thresholds.size() + 1
-	return last * pow(threshold_growth_factor, extra_levels)
-
-
-# ====================== PUBLIC API ======================
+# ====================== API PÚBLICA ======================
 
 func get_current_luminance() -> float:
 	return current_luminance
 
-func get_progress_to_next_threshold() -> float:
-	var target = _get_threshold_for_level(condensation_level)
-	return current_luminance / target
+func get_progress() -> float:
+	return current_luminance / energia_total
 
-func reset_for_new_world():
+func reset_for_new_world() -> void:
 	current_luminance = 0.0
-	condensation_level = 0
-	current_limit = 5
-	figure_manager.figure_limit = 5
+	_purified = false
+	emit_signal("luminance_changed", current_luminance, energia_total)

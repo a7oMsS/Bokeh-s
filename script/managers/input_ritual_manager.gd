@@ -14,7 +14,7 @@ var accumulated_rotation := 0.0
 var _last_angle := 0.0
 var _has_last_angle := false
 
-const MIN_HOLD_TIME := 0.5
+const MIN_HOLD_TIME := 1.5
 
 ## Only gesture movement inside this ring counts. Leaving it cancels the ritual.
 const MIN_RADIUS := 20.0
