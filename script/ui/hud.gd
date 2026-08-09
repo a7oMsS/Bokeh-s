@@ -14,9 +14,10 @@ func show_floating_text(points: float):
 
 
 func update_score(total: float, delta: float) -> void:
-	score_label.text = "Score: %d" % int(round(total))
+	#score_label.text = "Score: %d" % int(round(total))
 	show_floating_text(delta)
 
 
 func update_combo(combo: int, _max_combo: int) -> void:
-	combo_label.text = "" if combo <= 1 else "Combo x%d" % combo
+	return
+	#combo_label.text = "" if combo <= 1 else "Combo x%d" % combo

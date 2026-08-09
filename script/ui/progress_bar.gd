@@ -35,7 +35,7 @@ func update_luminance(current: float, max_val: float):
 	style.bg_color = fill_color
 	style.shadow_color = glow_color
 
-	var target_ratio = lerp(0.15, 1.0, t)
+	var target_ratio = lerp(0.0, 1.0, t)
 	particles.amount_ratio = target_ratio
 
 	## Compensates particle emission offset for the bar's skew shader.

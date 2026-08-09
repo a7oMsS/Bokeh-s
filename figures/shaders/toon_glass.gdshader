@@ -73,6 +73,6 @@ void fragment() {
     final_color.rgb = mix(final_color.rgb, final_color_stripes.rgb, stripe_mask);
 
 
-        COLOR = final_color;
+    COLOR = final_color;
 
 }

@@ -12,6 +12,7 @@ extends Control
 @onready var luminance_manager = $Managers/LuminanceManager
 @onready var container = $ClicArea/FiguresLayer
 @onready var camera = $Camera2D
+@onready var cursor_visual = $hud/CursorVisual
 @onready var progressBar = $hud/ProgressBar
 @onready var progressLabel = $hud/Luminalbl
 @onready var hud = $hud
@@ -22,6 +23,7 @@ func _ready():
 	luminance_manager.luminance_changed.connect(progressBar.update_luminance)
 
 	# Input → Ritual
+	input_ritual_manager.condense_started.connect(cursor_visual.on_condense_started)
 	input_ritual_manager.condense_started.connect(ritual_controller.start_condense)
 	input_ritual_manager.condense_held.connect(ritual_controller.on_condense_held)
 	input_ritual_manager.condense_resolved.connect(ritual_controller.on_condense_resolved)
@@ -36,6 +38,8 @@ func _ready():
 		if data.get("result", "") == RitualConstants.RESULT_SUCCESS:
 			audio_manager.play_success(data.get("quality", 0.0))
 	)
+	
+	ritual_controller.ritual_resolved.connect(cursor_visual.on_ritual_resolved)
 	
 	score_manager.score_updated.connect(hud.update_score)
 	score_manager.combo_updated.connect(hud.update_combo)

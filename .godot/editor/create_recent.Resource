@@ -1,3 +1,5 @@
+ImageTexture
+Image
 ShaderMaterial
 Resource
 Shader

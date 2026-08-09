@@ -20,6 +20,8 @@
 [ext_resource type="Theme" uid="uid://da8clmu3p12hv" path="res://assets/themes/bokehsTheme.tres" id="17_pr6ky"]
 [ext_resource type="AudioStream" uid="uid://0eind5l8ocuo" path="res://assets/music/peakk.mp3" id="18_yomsl"]
 [ext_resource type="Script" uid="uid://cfw4nqpoutqhn" path="res://script/core/camera_2d.gd" id="19_b2ey7"]
+[ext_resource type="Script" uid="uid://un6gcwra3itw" path="res://script/ui/cursor_visual.gd" id="20_5r554"]
+[ext_resource type="PackedScene" uid="uid://c1r6lgu2jlwt5" path="res://scenes/ui/mastery_pop.tscn" id="20_uyqaj"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_706d0"]
 blend_mode = 1
@@ -218,10 +220,14 @@ randomness = 0.2
 process_material = SubResource("ParticleProcessMaterial_t3fqk")
 
 [node name="CanvasModulate" type="CanvasModulate" parent="ClicArea" unique_id=975298817]
-color = Color(0.07293195, 0.068367034, 6.016344e-09, 1)
+color = Color(0.039215688, 0.039215688, 0.039215688, 1)
 
 [node name="hud" type="CanvasLayer" parent="." unique_id=464876629]
 script = ExtResource("13_0k6rw")
+
+[node name="CursorVisual" type="Node2D" parent="hud" unique_id=320666850]
+z_index = 4
+script = ExtResource("20_5r554")
 
 [node name="ProgressBar" type="ProgressBar" parent="hud" unique_id=1568739627]
 material = SubResource("ShaderMaterial_rs6f8")
@@ -278,6 +284,8 @@ anchor_right = 0.467
 anchor_bottom = 0.206
 offset_right = 40.0
 offset_bottom = 36.0
+
+[node name="MasteryPop" parent="hud" unique_id=977074219 instance=ExtResource("20_uyqaj")]
 
 [node name="BgMusic" type="AudioStreamPlayer" parent="." unique_id=929896588]
 stream = SubResource("AudioStreamRandomizer_7vnia")

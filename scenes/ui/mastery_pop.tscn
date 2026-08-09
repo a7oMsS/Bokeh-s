@@ -1,0 +1,58 @@
+[gd_scene format=3 uid="uid://c1r6lgu2jlwt5"]
+
+[ext_resource type="Script" uid="uid://c23vrpardv83j" path="res://script/ui/mastery_toast.gd" id="1_ugavl"]
+[ext_resource type="Theme" uid="uid://da8clmu3p12hv" path="res://assets/themes/bokehsTheme.tres" id="2_cucv5"]
+[ext_resource type="Texture2D" uid="uid://cb54kiyq7jjlj" path="res://assets/images/star_2.png" id="3_ar7ci"]
+[ext_resource type="FontFile" uid="uid://n1khrq12xcqh" path="res://assets/fonts/BebasNeue-Regular.ttf" id="4_ar7ci"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4wr10"]
+
+[sub_resource type="FontVariation" id="FontVariation_4ug06"]
+base_font = ExtResource("4_ar7ci")
+spacing_glyph = 2
+
+[node name="MasteryPop" type="PanelContainer" unique_id=977074219]
+offset_right = 1.0
+offset_bottom = 36.0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_4wr10")
+script = ExtResource("1_ugavl")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=78847121]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="PanelContainer" type="PanelContainer" parent="HBoxContainer" unique_id=449010122]
+layout_mode = 2
+theme = ExtResource("2_cucv5")
+theme_type_variation = &"Icon"
+
+[node name="MarginContainer" type="MarginContainer" parent="HBoxContainer/PanelContainer" unique_id=872301397]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Icon" type="TextureRect" parent="HBoxContainer/PanelContainer/MarginContainer" unique_id=1608742656]
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+theme = ExtResource("2_cucv5")
+texture = ExtResource("3_ar7ci")
+expand_mode = 2
+stretch_mode = 4
+
+[node name="PanelContainer2" type="PanelContainer" parent="HBoxContainer" unique_id=2135492668]
+layout_mode = 2
+theme = ExtResource("2_cucv5")
+theme_type_variation = &"MasteryMessage"
+
+[node name="MarginContainer2" type="MarginContainer" parent="HBoxContainer/PanelContainer2" unique_id=1450629618]
+layout_mode = 2
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Message" type="Label" parent="HBoxContainer/PanelContainer2/MarginContainer2" unique_id=486986891]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 0.92)
+theme_override_fonts/font = SubResource("FontVariation_4ug06")
+theme_override_font_sizes/font_size = 44
