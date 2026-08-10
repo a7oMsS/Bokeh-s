@@ -39,16 +39,13 @@ func on_ritual_cancelled() -> void:
 		active_ritual.cancel()
 
 
-## Se llama tanto si el ritual tuvo éxito como si se canceló -- BaseRitual
-## siempre incluye "result" en data (RESULT_SUCCESS o RESULT_CANCEL).
-## release() siempre corre primero: libera la reserva. consume() solo se
-## suma si de verdad hubo éxito -- si se canceló, la energía nunca se gastó,
-## solo estuvo retenida.
 func _on_ritual_finished(data: Dictionary) -> void:
+	var result = data.get("result", "")
+	var already_ignited = active_ritual != null and active_ritual.elapsed >= InputRitualManager.MIN_HOLD_TIME
 	active_ritual = null
 
 	Explorer.release(_reserved_energy)
-	if data.get("result", "") == RitualConstants.RESULT_SUCCESS:
+	if result == RitualConstants.RESULT_SUCCESS or (result == RitualConstants.RESULT_CANCEL and already_ignited):
 		Explorer.consume(_reserved_energy)
 	_reserved_energy = 0.0
 

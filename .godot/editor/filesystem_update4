@@ -1,5 +1,5 @@
 res://default_bus_layout.tres
-res://scenes/core/main.tscn
+res://scenes/objects/figure.tscn
 res://assets/themes/bokehsTheme.tres
 res://figures/shaders/SDFSolid.gdshader
 res://figures/shaders/SDFGradient.gdshader
@@ -9,11 +9,4 @@ res://assets/themes/new_gradient_texture_2d.tres
 res://figures/shaders/vignette_shader.gdshader
 res://figures/skew.gdshader
 res://figures/shaders/toon_glass.gdshader
-res://script/core/main.gd
-res://script/ui/energy_ring.gd
-res://script/core/clic_area.gd
-res://assets/images/cursor.tres
-res://script/ui/cursor_visual.gd
-res://script/ui/mastery_toast.gd
-res://scenes/ui/mastery_pop.tscn
-res://script/ui/progress_bar.gd
+res://figures/shaders/VignetteSmokeMaterial.tres

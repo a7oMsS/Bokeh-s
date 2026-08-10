@@ -15,7 +15,7 @@ class_name CursorVisual
 # Círculo base (estado "reposo")
 # -------------------------------------------------
 const BASE_RADIUS := 45.0
-const BASE_COLOR := Color(1.0, 1.0, 1.0, 0.9)
+const BASE_COLOR := Color(1.0, 1.0, 1.0, 0.552)
 const BASE_WIDTH := 3.0
 
 # -------------------------------------------------
@@ -29,7 +29,7 @@ const ARC_GAP := deg_to_rad(6.0)
 const START_ANGLE := deg_to_rad(60.0)
 
 const FADE_IN_TIME := 0.22
-const HOLD_TIME := 2.0
+const HOLD_TIME := 2.5
 const FADE_OUT_TIME := 0.48   # ~1.5s total
 
 const SCALE_IN_TIME := 0.35
@@ -59,6 +59,30 @@ var _deny_tween: Tween
 
 var _shake_strength := 0.0
 @onready var _rand := RandomNumberGenerator.new()
+
+# -------------------------------------------------
+# Cupo de Bokeh (activos/máximos) — se muestra y oculta EXACTAMENTE junto
+# con el círculo base (mismo scale/modulate, sin timer propio como el
+# anillo de energía).
+# -------------------------------------------------
+
+## Asignar desde main.gd: cursor_visual.figure_manager = figure_manager
+var figure_manager: FigureManager
+
+const BOKEH_RADIUS := 65.0
+const BOKEH_ARC_CENTER_ANGLE := deg_to_rad(180.0)  # lado opuesto al anillo de energía
+const BOKEH_ARC_SPAN := deg_to_rad(140.0)  # fijo -- compartido por puntos y relleno
+const BOKEH_DISCRETE_CAP := 9
+
+const BOKEH_DOT_MIN_RADIUS := 3.0
+const BOKEH_DOT_MAX_RADIUS := 13.0
+const BOKEH_DOT_FILL_FACTOR := 0.38  # fracción del espacio entre puntos que ocupa cada uno
+
+const BOKEH_FILL_ARC_WIDTH := 4.0
+
+const BOKEH_COLOR_LIT := Color(0.5, 0.95, 0.85, 0.95)   # menta, igual que el trazo del círculo base
+const BOKEH_COLOR_UNLIT := Color(1.0, 1.0, 1.0, 0.12)
+
 
 func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
@@ -179,6 +203,7 @@ func _update_scale_trans(delta: float) -> void:
 
 func _draw() -> void:
 	draw_arc(Vector2.ZERO, BASE_RADIUS, 0.0, TAU, 32, BASE_COLOR, BASE_WIDTH, true)
+	_draw_bokeh_count()
 
 	if _energy_state != "hidden":
 		_draw_energy_ring()
@@ -204,3 +229,51 @@ func _draw_energy_ring() -> void:
 		if seg_fill > 0.0:
 			var filled_end = seg_start - segment_span * seg_fill
 			draw_arc(Vector2.ZERO, ENERGY_RADIUS, seg_start, filled_end, 12, fill_color, ARC_WIDTH, true)
+
+
+func _draw_bokeh_count() -> void:
+	if figure_manager == null:
+		return
+
+	var limit = figure_manager.figure_limit
+	var active = figure_manager.active_figures.size()
+
+	if limit <= BOKEH_DISCRETE_CAP:
+		_draw_bokeh_dots(active, limit)
+	else:
+		_draw_bokeh_fill_arc(active, limit)
+
+
+func _draw_bokeh_dots(active: int, limit: int) -> void:
+	if limit <= 0:
+		return
+
+	var start_angle = BOKEH_ARC_CENTER_ANGLE - BOKEH_ARC_SPAN * 0.5
+	var spacing = BOKEH_ARC_SPAN / float(limit+1) if limit > 1 else 0.0
+	
+	var dot_radius: float
+	if limit > 1:
+		var chord = 2.0 * BOKEH_RADIUS * sin(spacing * 0.5)
+		dot_radius = clamp(chord * BOKEH_DOT_FILL_FACTOR, BOKEH_DOT_MIN_RADIUS, BOKEH_DOT_MAX_RADIUS)
+	else:
+		dot_radius = BOKEH_DOT_MAX_RADIUS
+
+	for i in range(limit):
+		var angle = start_angle + (i+1) * spacing
+		var pos = Vector2(cos(angle), sin(angle)) * BOKEH_RADIUS
+		var lit = i < active
+		draw_circle(pos, dot_radius, BOKEH_COLOR_LIT if lit else BOKEH_COLOR_UNLIT)
+		if not lit:
+			draw_arc(pos, dot_radius, 0.0, TAU, 10, Color(BOKEH_COLOR_LIT, 0.3), 1.0, true)
+
+
+func _draw_bokeh_fill_arc(active: int, limit: int) -> void:
+	var fill_ratio = clamp(float(active) / float(limit), 0.0, 1.0)
+	var start_angle = BOKEH_ARC_CENTER_ANGLE - BOKEH_ARC_SPAN * 0.5
+	var end_angle = BOKEH_ARC_CENTER_ANGLE + BOKEH_ARC_SPAN * 0.5
+
+	draw_arc(Vector2.ZERO, BOKEH_RADIUS, start_angle, end_angle, 24, BOKEH_COLOR_UNLIT, BOKEH_FILL_ARC_WIDTH, true)
+
+	if fill_ratio > 0.0:
+		var filled_end = start_angle + BOKEH_ARC_SPAN * fill_ratio
+		draw_arc(Vector2.ZERO, BOKEH_RADIUS, start_angle, filled_end, 24, BOKEH_COLOR_LIT, BOKEH_FILL_ARC_WIDTH, true)

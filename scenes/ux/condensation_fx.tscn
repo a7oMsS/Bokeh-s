@@ -27,7 +27,6 @@ light_mode = 1
 script = ExtResource("1_7dv6w")
 
 [node name="Sparks" type="CPUParticles2D" parent="." unique_id=684669555]
-light_mask = 0
 z_index = 2
 amount = 20
 texture = ExtResource("2_05858")
@@ -49,7 +48,6 @@ angle_max = 90.0
 scale_amount_min = 0.1
 scale_amount_max = 0.3
 scale_amount_curve = SubResource("Curve_6yvqr")
-color = Color(18.892, 18.892, 18.892, 1)
 color_ramp = SubResource("Gradient_lt0nm")
 color_initial_ramp = SubResource("Gradient_8jvaw")
 
@@ -68,9 +66,6 @@ texture = ExtResource("5_5uxxv")
 [node name="Trail" parent="." unique_id=2081527438 instance=ExtResource("6_05858")]
 visible = false
 modulate = Color(2.8223546, 2.8223546, 2.8223546, 1)
-
-[node name="BoundaryRing" type="Line2D" parent="." unique_id=1635283667]
-visible = false
 
 [node name="ChargeAudio" type="AudioStreamPlayer2D" parent="." unique_id=1637124786]
 stream = ExtResource("7_g4s5m")

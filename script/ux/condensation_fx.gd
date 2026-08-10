@@ -13,14 +13,34 @@ signal condense_cancel(data: Dictionary)
 @onready var trail: CondenseTrail = $Trail
 @onready var charge_audio: CondenseChargeAudio = $ChargeAudio
 
-const COLOR_EMBER := Color(1.0, 0.55, 0.1, 0.85)
+const COLOR_EMBER := Color(1.0, 0.55, 0.1, 0.443)
 const COLOR_CHARGED := Color(1.0, 0.84, 0.0, 1.0)
 const COLOR_BONUS := Color(0.0, 0.778, 0.785, 1.0)
 const COLOR_PERFECT := Color(0.982, 0.1, 1.0, 1.0)
 
+## Recalibrado para el nuevo piso de CanvasModulate (0.039 → 0.2, ~5.1x más
+## brillante). Estos multiplicadores de "boost HDR" estaban calibrados
+## contra el piso viejo -- sin esto, sobreexponen igual que le pasó al
+## PointLight de Bokeh. Punto de partida por matemática, ajusta a ojo.
+## Nota: el flash de "perfect" en resolve() usa COLOR_PERFECT sin
+## multiplicar por nada, así que ese momento no necesita este ajuste.
+const HDR_COMPENSATION := 0.8  # ≈ 0.039 / 0.2
+
+const LIGHT_COLOR_BOOST := 2.0 * HDR_COMPENSATION
+const RING_COLOR_BOOST := 2.2 * HDR_COMPENSATION
+const SPARKS_COLOR_BOOST := 6.0 * HDR_COMPENSATION
+const LIGHT_ENERGY_MIN := 0.0 * HDR_COMPENSATION
+const LIGHT_ENERGY_MAX := 1.6 * HDR_COMPENSATION
+const LIGHT_ENERGY_QUALITY_BONUS := 0.8 * HDR_COMPENSATION
+
+## Cuánto tarda la luz en llegar de 0 a su máximo una vez que ya pasó
+## MIN_HOLD_TIME -- su propia rampa, independiente de "progress" (que para
+## ese punto ya viene adelantado y causaría un salto en vez de un fundido).
+const LIGHT_RAMP_DURATION := 0.5
+
 const SCALE_MIN := 0.35
 const SCALE_MAX := 0.85
-const SCALE_BONUS := 0.4
+const SCALE_BONUS := 0.2
 
 const SPRING_STIFFNESS := 55.0
 const SPRING_DAMPING := 0.78
@@ -52,8 +72,9 @@ func begin(pos: Vector2) -> void:
 
 	core.modulate = COLOR_EMBER
 	sparks.modulate = COLOR_EMBER
-	light.color = COLOR_EMBER * 2.0
-	ring.modulate = COLOR_EMBER * 1.6
+	light.color = COLOR_EMBER * LIGHT_COLOR_BOOST
+	light.energy = 0.0  # se enciende recién al pasar InputRitualManager.MIN_HOLD_TIME
+	ring.modulate = COLOR_EMBER * RING_COLOR_BOOST
 
 	core.scale = Vector2.ONE * SCALE_MIN
 	ring.scale = Vector2.ZERO
@@ -83,15 +104,17 @@ func _process(delta: float) -> void:
 	var oscillation = sin(elapsed * pulse_speed) * pulse_amplitude
 
 	core.scale = Vector2.ONE * (_scale_current + (oscillation * 0.1))
-	ring.scale = Vector2.ONE * (_scale_current * 0.55) * quality
+	ring.scale = Vector2.ONE * (_scale_current * 0.70) * quality
 	ring.rotation += quality * delta * 10.0
 
 	var charge_color = COLOR_EMBER.lerp(COLOR_CHARGED, progress)
 	var final_color = charge_color.lerp(COLOR_BONUS, quality)
 	core.modulate = final_color
-	sparks.modulate = final_color * 3.0
+	sparks.modulate = final_color * SPARKS_COLOR_BOOST
 	light.color = final_color
-	light.energy = lerp(1.2, 2.6, progress) + quality * 0.8
+	
+	var light_progress = clamp((elapsed - InputRitualManager.MIN_HOLD_TIME) / LIGHT_RAMP_DURATION, 0.0, 1.0)
+	light.energy = lerp(LIGHT_ENERGY_MIN, LIGHT_ENERGY_MAX, light_progress) + quality * LIGHT_ENERGY_QUALITY_BONUS * light_progress
 
 	sparks.speed_scale = lerp(0.3, 1.4, progress)
 	sparks.radial_accel_min = lerp(-100.0, -400.0, quality)

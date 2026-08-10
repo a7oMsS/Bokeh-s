@@ -11,6 +11,7 @@ extends Control
 @onready var audio_manager = $Managers/AudioManager
 @onready var luminance_manager = $Managers/LuminanceManager
 @onready var container = $ClicArea/FiguresLayer
+@onready var world_awakening = $ClicArea/WorldAwakening
 @onready var camera = $Camera2D
 @onready var cursor_visual = $hud/CursorVisual
 @onready var progressBar = $hud/ProgressBar
@@ -18,6 +19,7 @@ extends Control
 @onready var hud = $hud
 
 func _ready():
+	cursor_visual.figure_manager = figure_manager
 	clic_area.gui_input.connect(input_ritual_manager.process_input)
 	clic_area.gui_input.connect(camera.process_input)
 	luminance_manager.luminance_changed.connect(progressBar.update_luminance)
@@ -46,6 +48,7 @@ func _ready():
 	invocation_controller.invoke.connect(figure_manager.on_invoke)
 	
 	shadow_manager.start_world(figure_manager, container)
+	luminance_manager.luminance_changed.connect(world_awakening.on_luminance_changed)
 
 func _on_condensation_triggered(level: int):
 	camera.do_condensation_shake(level)

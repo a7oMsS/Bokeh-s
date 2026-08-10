@@ -11,11 +11,33 @@ var end_color_glow := Color(0.047, 0.553, 0.94, 0.38)
 
 var tween: Tween
 
+# ---- Visibilidad: oculta hasta que sale de 0 por primera vez; si vuelve
+# a caer exactamente a 0 y se queda ahí un rato, se oculta otra vez. ----
+const ZERO_EPSILON := 0.01
+const HIDE_AFTER_ZERO_TIME := 3.0
+const VISIBILITY_FADE_TIME := 0.4
+
+var _is_at_zero := true
+var _zero_timer := 0.0
+var _visibility_tween: Tween
+
+
 func _ready():
 	max_value = 100.0
 	get_window().size_changed.connect(_on_window_resize)
 	_on_window_resize()
 	particles.amount_ratio = 0
+
+	modulate.a = 0.0
+	label.modulate.a = 0.0
+
+
+func _process(delta: float) -> void:
+	if not _is_at_zero:
+		return
+	_zero_timer += delta
+	if modulate.a > 0.0 and _zero_timer >= HIDE_AFTER_ZERO_TIME:
+		_set_visibility(false)
 
 
 func _on_window_resize():
@@ -57,6 +79,23 @@ func update_luminance(current: float, max_val: float):
 
 	if t > 0.85:
 		particles.amount_ratio = int(target_ratio * 1.6)
+
+	# ---- visibilidad ----
+	_is_at_zero = current <= ZERO_EPSILON
+	if not _is_at_zero:
+		_zero_timer = 0.0
+		_set_visibility(true)
+
+
+func _set_visibility(should_show: bool) -> void:
+	if _visibility_tween and _visibility_tween.is_valid():
+		_visibility_tween.kill()
+
+	var target_alpha := 1.0 if should_show else 0.0
+	_visibility_tween = create_tween()
+	_visibility_tween.set_parallel(true)
+	_visibility_tween.tween_property(self, "modulate:a", target_alpha, VISIBILITY_FADE_TIME)
+	_visibility_tween.tween_property(label, "modulate:a", target_alpha, VISIBILITY_FADE_TIME)
 
 
 func trigger_condensation_reset(_level: int):

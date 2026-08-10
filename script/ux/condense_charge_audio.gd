@@ -11,7 +11,7 @@ var _pitch_seed := 1.0
 func start() -> void:
 	_pitch_seed = randf_range(base_pitch_range.x, base_pitch_range.y)
 	pitch_scale = _pitch_seed
-	volume_db = -15.0
+	volume_db = -10.0
 	bus = RitualConstants.AUDIO_BUS_CONDENSE
 	play()
 
@@ -19,7 +19,7 @@ func start() -> void:
 func update(progress: float, quality: float) -> void:
 	if not playing:
 		return
-	volume_db = lerp(-15.0, -6.0, progress)
+	volume_db = lerp(-10.0, -4.0, progress)
 	_filter.cutoff_hz = lerp(400.0, 12000.0, progress)
 	pitch_scale = _pitch_seed + (quality * 0.25)
 

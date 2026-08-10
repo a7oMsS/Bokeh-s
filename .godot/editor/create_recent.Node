@@ -1,14 +1,14 @@
+Sprite2D
+TextureRect
+Node
 PanelContainer
 MarginContainer
 Panel
 HBoxContainer
 Label
-TextureRect
 Node2D
-Node
 MeshInstance2D
 CondenseChargeAudio
 Line2D
 RichTextLabel
-Sprite2D
 PointLight2D

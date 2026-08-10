@@ -72,6 +72,10 @@ func _update_motion(current_pos: Vector2) -> void:
 	emit_signal("condense_held", spin_ratio, current_angle)
 
 
+## Sin condiciones a propósito: es una capa de dificultad del gesto, no una
+## salida. Cancela siempre que salgas del radio, sin importar cuánto llevaras
+## sostenido -- "cuidado hacia dónde deslizas" aplica durante todo el hold,
+## no solo al principio.
 func _cancel_out_of_bounds() -> void:
 	if not is_pressing:
 		return
