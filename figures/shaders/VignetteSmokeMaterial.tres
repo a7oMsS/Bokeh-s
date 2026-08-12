@@ -3,23 +3,29 @@
 [ext_resource type="Shader" uid="uid://dj7d1eyj0toiq" path="res://figures/shaders/vignette_shader.gdshader" id="1_mb1eh"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_fg3q0"]
+noise_type = 2
 seed = -2
-frequency = 0.0058
+frequency = 0.0069
 fractal_octaves = 1
-fractal_weighted_strength = 0.52
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_mb1eh"]
 noise = SubResource("FastNoiseLite_fg3q0")
 seamless = true
+in_3d_space = true
 
 [resource]
 shader = ExtResource("1_mb1eh")
 shader_parameter/noise_tex = SubResource("NoiseTexture2D_mb1eh")
 shader_parameter/color_dark = Color(0.06, 0.05, 0.09, 1)
-shader_parameter/color_bleed = Color(0.24549544, 0, 0.082058586, 1)
+shader_parameter/color_bleed = Color(0.30943933, 0.012920001, 0.09320182, 1)
 shader_parameter/damage_ratio = 0.0
 shader_parameter/fog_speed = 0.10000000475
-shader_parameter/uv_scale = 0.91200004006012
-shader_parameter/edge_softness = 0.2170000103075
-shader_parameter/base_density = 0.90500003972762
-shader_parameter/hardness = 0.83600003971
+shader_parameter/uv_scale = 1.10000004899012
+shader_parameter/edge_softness = 0.1200000057
+shader_parameter/base_density = 1.1
+shader_parameter/hardness = 0.7470000354825
+shader_parameter/reveal_strength = 0.8550000406125
+shader_parameter/padding = 1.2510000119225
+shader_parameter/protrusion_amount = 0.4530000215175
+shader_parameter/facet_count = 2.0
+shader_parameter/radial_weight = 0.3530000167675

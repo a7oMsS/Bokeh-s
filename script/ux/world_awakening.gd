@@ -43,7 +43,7 @@ const AWAKE_SATURATION := 1.35
 const AWAKE_GLOW := 0.95
 const AWAKE_PARTICLE_RATIO := 1.0
 const AWAKE_FOG_INTENSITY := 0.4
-const AWAKE_FOG_COLOR := Color(0.28, 0.26, 0.32, 1.0)
+const AWAKE_FOG_COLOR := Color(0.357, 0.334, 0.405, 1.0)
 
 ## Qué tan rápido _current_t persigue a _target_t — más alto reacciona más
 ## rápido a un salto repentino de luminancia (invocar, dispersar un Vignette).

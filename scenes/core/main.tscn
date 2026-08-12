@@ -14,7 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://7w4m6m5sc2ci" path="res://assets/images/grunge_texture.png" id="11_etpvq"]
 [ext_resource type="Texture2D" uid="uid://lpcyy6qah0v8" path="res://assets/images/basic_particles.png" id="12_ralht"]
 [ext_resource type="Script" uid="uid://cfgom8bl65jpj" path="res://script/ui/hud.gd" id="13_0k6rw"]
-[ext_resource type="Shader" uid="uid://bwm5qsjtjjb6d" path="res://figures/skew.gdshader" id="14_tw145"]
+[ext_resource type="Shader" uid="uid://bwm5qsjtjjb6d" path="res://figures/shaders/skew.gdshader" id="14_tw145"]
 [ext_resource type="Script" uid="uid://c7otjl2djk4nf" path="res://script/ux/world_awakening.gd" id="14_wy8uk"]
 [ext_resource type="Script" uid="uid://dsawxgstfmh1l" path="res://script/ui/progress_bar.gd" id="15_i3jsw"]
 [ext_resource type="Texture2D" uid="uid://drb6606b8qknf" path="res://assets/images/confetti_particle.png" id="16_fbmiv"]
@@ -23,6 +23,7 @@
 [ext_resource type="Script" uid="uid://cfw4nqpoutqhn" path="res://script/core/camera_2d.gd" id="19_b2ey7"]
 [ext_resource type="Script" uid="uid://un6gcwra3itw" path="res://script/ui/cursor_visual.gd" id="20_5r554"]
 [ext_resource type="PackedScene" uid="uid://c1r6lgu2jlwt5" path="res://scenes/ui/mastery_pop.tscn" id="20_uyqaj"]
+[ext_resource type="AudioStream" uid="uid://dcreda575n0bc" path="res://assets/music/Bokeh's theme.mp3" id="23_tpkyp"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_706d0"]
 blend_mode = 1
@@ -129,8 +130,9 @@ shader_parameter/skew_factor_x = 0.200000057
 shader_parameter/skew_factor_y = 0.05000004987499995
 
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_7vnia"]
-streams_count = 1
+streams_count = 2
 stream_0/stream = ExtResource("18_yomsl")
+stream_1/stream = ExtResource("23_tpkyp")
 
 [node name="Main" type="Control" unique_id=1391800518]
 layout_mode = 3
@@ -293,7 +295,7 @@ offset_bottom = 36.0
 
 [node name="BgMusic" type="AudioStreamPlayer" parent="." unique_id=929896588]
 stream = SubResource("AudioStreamRandomizer_7vnia")
-volume_db = -30.281
+volume_db = -7.614
 autoplay = true
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1705537701]

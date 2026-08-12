@@ -55,6 +55,7 @@ color_initial_ramp = SubResource("Gradient_8jvaw")
 texture = ExtResource("3_6yvqr")
 
 [node name="PointLight2D" type="PointLight2D" parent="." unique_id=218793489]
+visible = false
 energy = 1.8
 texture = ExtResource("4_8jvaw")
 

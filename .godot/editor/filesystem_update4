@@ -1,5 +1,5 @@
 res://default_bus_layout.tres
-res://scenes/objects/figure.tscn
+res://scenes/objects/vignette.tscn
 res://assets/themes/bokehsTheme.tres
 res://figures/shaders/SDFSolid.gdshader
 res://figures/shaders/SDFGradient.gdshader
@@ -7,6 +7,16 @@ res://figures/shaders/SDFOutline.gdshader
 res://figures/shaders/SDFOutline_Gradient.gdshader
 res://assets/themes/new_gradient_texture_2d.tres
 res://figures/shaders/vignette_shader.gdshader
+res://figures/shaders/VignetteSmokeMaterial.tres
 res://figures/skew.gdshader
 res://figures/shaders/toon_glass.gdshader
-res://figures/shaders/VignetteSmokeMaterial.tres
+res://script/figures/vignette.gd
+res://script/managers/shadow_manager.gd
+res://script/ux/world_awakening.gd
+res://scenes/objects/figure.tscn
+res://script/figures/figure.gd
+res://scenes/ux/condensation_fx.tscn
+res://figures/shaders/SDFSolidMaterial.tres
+res://figures/shaders/meshQuad.tres
+res://figures/shaders/VignetteSmokeMaterial.gdshader
+res://scenes/core/main.tscn

@@ -15,9 +15,19 @@ class_name Vignette
 
 var global_params: Dictionary
 
+const DEPTH_VISUALS := {
+	FigureEnums.Depth.NEAR: {"scale_mult": 1.5, "alpha": 0.85,  "z_index": 20, "edge_softness_mult": 2.2},
+	FigureEnums.Depth.MID:  {"scale_mult": 1.0, "alpha": 1.0, "z_index": 10, "edge_softness_mult": 1.0},
+	FigureEnums.Depth.FAR:  {"scale_mult": 0.6, "alpha": 0.7,  "z_index": 1,  "edge_softness_mult": 1.8},
+}
+
+@export var base_edge_softness := 0.12  # el valor por defecto que ya tenías en el shader
+
+var _depth: FigureEnums.Depth
+
 @export var base_material: ShaderMaterial
 @export var combat_radius := 350.0  # mismo valor que el aura de purificación de Bokeh
-@export var tick_interval := 60.0 / 70.0  # 70bpm
+@export var tick_interval := 60.0 / 48.0  # 70bpm
 
 ## ⚠️ Multiplicadores de dureza sin confirmar contigo -- primera propuesta.
 @export var base_densidad := 30.0
@@ -27,13 +37,14 @@ var global_params: Dictionary
 	VignetteEnums.Hardness.DENSE: 1.4,
 }
 
-@export var power := 1.5  # daño infligido a Bokeh, por tick, dentro de rango
+@export var power := 0.0  # daño infligido a Bokeh, por tick, dentro de rango
 @export var regen_ticks_required := 6
 @export var regen_rate := 1.5  # /seg -- menor que el daño recibido, según acordamos
-@export var base_mesh_size := 140.0  # ⚠️ orden de magnitud a ojo, ajústalo viéndolo en pantalla
+@export var base_mesh_size := 180.0  # ⚠️ orden de magnitud a ojo, ajústalo viéndolo en pantalla
 
 var densidad: float
 var max_densidad: float
+var noise_seed: int
 var hardness: VignetteEnums.Hardness
 
 var _ticks_since_hit := 0
@@ -48,11 +59,12 @@ var _dispersed := false
 func init(params: Dictionary) -> void:
 	global_params = params
 	hardness = params.get("hardness", VignetteEnums.Hardness.NORMAL)
+	noise_seed = params.get("noise_seed", 1.0)
 	position = params.position
-	z_index = 10
 	max_densidad = base_densidad * hardness_multipliers.get(hardness, 1.0)
 	densidad = max_densidad
 	_base_scale = Vector2.ONE * params.get("size", 1.0)
+	_depth = params.get("depth", FigureEnums.Depth.MID)
 
 
 func _ready() -> void:
@@ -61,9 +73,22 @@ func _ready() -> void:
 	body_mesh.mesh = QuadMesh.new()
 	body_mesh.mesh.size = Vector2.ONE * base_mesh_size  # ⚠️ tamaño en pixeles, propuesta sin confirmar
 
+	var dv: Dictionary = DEPTH_VISUALS[_depth]
+	z_index = dv.z_index
+	scale = _base_scale * dv.scale_mult  # una sola vez, no derivamos con el tiempo
+
 	if base_material:
 		_shader_material = base_material.duplicate(true)
 		body_mesh.material = _shader_material
+		_shader_material.set_shader_parameter("edge_softness", base_edge_softness * dv.edge_softness_mult)
+	else:
+		push_warning("material not founded: %s" % base_material)
+		return
+	
+	var noise_tex = _shader_material.get_shader_parameter("noise_tex")
+	if noise_tex is NoiseTexture2D:
+		if noise_tex.noise:
+			noise_tex.noise.seed = noise_seed
 
 	scale = Vector2.ZERO
 	modulate.a = 0.0
@@ -134,10 +159,11 @@ func _update_visual() -> void:
 
 
 func appear() -> void:
+	var dv: Dictionary = DEPTH_VISUALS[_depth]
 	var tween := create_tween()
-	tween.tween_property(self, "scale", _base_scale, 0.6) \
+	tween.tween_property(self, "scale", _base_scale * dv.scale_mult, 0.6) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(self, "modulate:a", 1.0, 0.4)
+	tween.parallel().tween_property(self, "modulate:a", dv.alpha, 0.4) 
 
 
 func disperse() -> void:

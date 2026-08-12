@@ -30,6 +30,10 @@ var all_hardness: Array[VignetteEnums.Hardness] = [
 var all_sizes: Array[VignetteEnums.SizeCategory] = [
 	VignetteEnums.SizeCategory.SMALL, VignetteEnums.SizeCategory.MEDIUM, VignetteEnums.SizeCategory.LARGE,
 ]
+
+const ALL_DEPTHS: Array[FigureEnums.Depth] = [
+	FigureEnums.Depth.NEAR, FigureEnums.Depth.MID, FigureEnums.Depth.FAR
+]
 # PersonalityType.STATIC es el único activo por ahora — ver Vignette.gd.
 
 
@@ -167,6 +171,8 @@ func generate_params(position: Vector2) -> Dictionary:
 	var size_category = get_random_size_category()
 	return {
 		"position": position,
+		"depth": get_random_depth(),
+		"noise_seed": randi(),
 		"hardness": get_random_hardness(),
 		"size_category": size_category,
 		"size": get_scale_by_category(size_category),
@@ -180,6 +186,8 @@ func get_random_hardness() -> VignetteEnums.Hardness:
 func get_random_size_category() -> VignetteEnums.SizeCategory:
 	return all_sizes[randi() % all_sizes.size()]
 
+func get_random_depth() -> FigureEnums.Depth:
+	return ALL_DEPTHS[randi() % ALL_DEPTHS.size()]
 
 ## Escala visual por categoría — mucho más sutil que el rango de tamaños de
 ## Bokeh, a propósito: Vignette debe leerse sobrio, no llamativo.

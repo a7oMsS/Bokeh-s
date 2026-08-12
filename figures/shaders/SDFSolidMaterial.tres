@@ -4,3 +4,7 @@
 
 [resource]
 shader = ExtResource("1_es04v")
+shader_parameter/color_a = Color(1, 0.7, 0.4, 1)
+shader_parameter/shape = 0
+shader_parameter/smoothness = 0.34000001615
+shader_parameter/padding = 1.65
