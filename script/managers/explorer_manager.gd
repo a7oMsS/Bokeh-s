@@ -19,6 +19,7 @@ var reserved := 0.0
 # -------------------------------------------------
 func _ready():
 	set_process(true)
+	add_to_group("saveable_player")
 
 func _process(delta: float) -> void:
 	_regenerate(delta)
@@ -34,12 +35,10 @@ func _regenerate(delta: float) -> void:
 # API pública
 # -------------------------------------------------
 
-# ¿Hay energía suficiente para intentar algo?
 func can_afford(amount: float) -> bool:
 	return energy - reserved >= amount
 
 
-# Reserva energía (seed, ritual persistente)
 func reserve(amount: float) -> float:
 	if amount <= 0.0:
 		return 0.0
@@ -51,7 +50,6 @@ func reserve(amount: float) -> float:
 	return taken
 
 
-# Devuelve energía al pool
 func release(amount: float) -> void:
 	if amount <= 0.0:
 		return
@@ -60,7 +58,6 @@ func release(amount: float) -> void:
 	reserved = max(reserved, 0.0)
 
 
-# Consumo definitivo (no vuelve)
 func consume(amount: float) -> void:
 	if amount <= 0.0:
 		return
@@ -78,3 +75,14 @@ func energy_ratio() -> float:
 
 func available_energy() -> float:
 	return max(energy - reserved, 0.0)
+
+
+# -------------------------------------------------
+# Guardado
+# -------------------------------------------------
+func get_save_data() -> Dictionary:
+	return {"energy": energy}
+
+
+func load_save_data(data: Dictionary) -> void:
+	energy = data.get("energy", energy)

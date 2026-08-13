@@ -63,6 +63,7 @@ func _ready() -> void:
 	figure_manager.figure_limit = BASE_FIGURE_LIMIT + mastery_level
 	EventBusAuto.vignette_dispersed.connect(_on_vignette_dispersed)
 	emit_signal("mastery_changed", mastery, mastery_level)
+	add_to_group("saveable_player")
 
 
 func _process(delta: float) -> void:
@@ -98,8 +99,6 @@ func _register_success(quality: float) -> void:
 	var gained := BASE_SCORE * tier_mult * combo_mult
 	score += gained
 
-	# Mastery usa el mismo tier_mult que el puntaje, pero SIN combo --
-	# "generar un bokeh" da +1, los tiers multiplican, nada más.
 	_add_mastery(MASTERY_PER_INVOKE * tier_mult)
 
 	emit_signal("score_updated", score, gained)
@@ -181,3 +180,37 @@ func _unlock_name_for_level(level: int) -> String:
 		2: return "Personalidad: Parpadeo"
 		3: return "Tamaño: Mediano"
 		_: return ""
+
+
+# -------------------------------------------------
+# Guardado
+# -------------------------------------------------
+func get_save_data() -> Dictionary:
+	return {
+		"mastery": mastery,
+		"mastery_level": mastery_level,
+		"score": score,
+		"max_combo": max_combo,
+		"good": count_good,
+		"perfect": count_perfect,
+		"normal": count_normal,
+	}
+
+
+## No alcanza con restaurar las dos variables — los desbloqueos reales
+## viven como efecto secundario en FigureManager. Hay que re-aplicar cada
+## nivel ganado, o el jugador ve "Nivel 2" sin tener el Parpadeo de verdad.
+func load_save_data(data: Dictionary) -> void:
+	mastery = data.get("mastery", 0.0)
+	mastery_level = data.get("mastery_level", 0)
+	score = data.get("score", 0.0)
+	max_combo = data.get("max_combo", 0)
+	count_good = data.get("good", 0)
+	count_perfect = data.get("perfect", 0)
+	count_normal = data.get("normal", 0)
+
+	for level in range(1, mastery_level + 1):
+		_apply_level_unlock(level)
+
+	figure_manager.figure_limit = BASE_FIGURE_LIMIT + mastery_level
+	emit_signal("mastery_changed", mastery, mastery_level)

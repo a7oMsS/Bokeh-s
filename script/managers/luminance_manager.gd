@@ -34,19 +34,27 @@ const VIGNETTE_DISPERSE_BONUS := 3.0
 
 var _purified := false
 
-@onready var figure_manager = $"../FigureManager"
-@onready var shadow_manager = $"../ShadowManager"
+var figure_manager: FigureManager
+var shadow_manager: ShadowManager
 
 
-func _ready() -> void:
+## Reemplaza a los @onready var ... = $"../X" que tenía antes — ya no
+## asume su posición en el árbol, la recibe de world.gd.
+func setup(fm: FigureManager, sm: ShadowManager) -> void:
+	figure_manager = fm
+	shadow_manager = sm
 	figure_manager.figure_spawned.connect(_on_bokeh_invoked)
 	shadow_manager.vignette_spawned.connect(_on_vignette_spawned)
 	shadow_manager.vignette_dispersed.connect(_on_vignette_dispersed)
+
+
+func _ready() -> void:
 	emit_signal("luminance_changed", current_luminance, energia_total)
+	add_to_group("saveable_world")
 
 
 func _process(delta: float) -> void:
-	if _purified:
+	if _purified or figure_manager == null:
 		return
 
 	var bokeh_count = figure_manager.active_figures.size()
@@ -60,8 +68,6 @@ func _on_bokeh_invoked(_fig: Node) -> void:
 	_apply_delta(BOKEH_INVOKE_BONUS)
 
 
-## counts_as_spawn es false para los Vignette ambientales del inicio del
-## mundo — esos ya están ahí, no "nacen", así que nunca restan.
 func _on_vignette_spawned(_vig: Node, counts_as_spawn: bool) -> void:
 	if counts_as_spawn:
 		_apply_delta(-VIGNETTE_SPAWN_HIT)
@@ -94,4 +100,17 @@ func get_progress() -> float:
 func reset_for_new_world() -> void:
 	current_luminance = 0.0
 	_purified = false
+	emit_signal("luminance_changed", current_luminance, energia_total)
+
+
+# -------------------------------------------------
+# Guardado
+# -------------------------------------------------
+func get_save_data() -> Dictionary:
+	return {"current_luminance": current_luminance, "purified": _purified}
+
+
+func load_save_data(data: Dictionary) -> void:
+	current_luminance = data.get("current_luminance", 0.0)
+	_purified = data.get("purified", false)
 	emit_signal("luminance_changed", current_luminance, energia_total)

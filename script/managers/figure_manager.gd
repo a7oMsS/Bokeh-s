@@ -220,7 +220,7 @@ func generate_params(config: Dictionary, quality: float = 0.1) -> Dictionary:
 var figures_container
 
 func _ready():
-	figures_container = $"../../ClicArea/FiguresLayer"
+	figures_container = $"../../ClicArea/Atmosphere/FiguresLayer"
 
 func on_invoke(type: String, data: Dictionary):
 	match type:
