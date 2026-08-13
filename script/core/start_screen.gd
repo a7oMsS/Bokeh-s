@@ -14,10 +14,8 @@ func _ready() -> void:
 	btn_jugar.pressed.connect(_on_jugar_pressed)
 	btn_config.pressed.connect(_on_config_pressed)
 
-
 func _on_jugar_pressed() -> void:
 	get_tree().change_scene_to_file(WORLD_1_SCENE)
-
 
 func _on_config_pressed() -> void:
 	settings_panel.visible = not settings_panel.visible

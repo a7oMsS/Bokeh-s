@@ -31,9 +31,9 @@ var personality: FigurePersonality
 
 ## Blur is symmetric: as soft when Near as when Far — only Mid is sharp.
 const DEPTH_VISUALS := {
-	FigureEnums.Depth.NEAR: {"smoothness": 0.3,  "alpha": 1.0,  "scale_mult": 1.5, "z_index": 20, "energy_mult": 0.3, "mesh_mult": 1.6},
-	FigureEnums.Depth.MID:  {"smoothness": 0.02, "alpha": 0.75, "scale_mult": 1.0, "z_index": 10, "energy_mult": 1.1, "mesh_mult": 1.0},
-	FigureEnums.Depth.FAR:  {"smoothness": 0.3,  "alpha": 0.32, "scale_mult": 0.5, "z_index": 1,  "energy_mult": 0.6, "mesh_mult": 0.7},
+	FigureEnums.Depth.NEAR: {"smoothness": 0.3,  "alpha": 1.0,  "scale_mult": 1.5, "z_index_range": Vector2i(17, 24), "energy_mult": 0.3, "mesh_mult": 1.6},
+	FigureEnums.Depth.MID:  {"smoothness": 0.02, "alpha": 0.75, "scale_mult": 1.0, "z_index_range": Vector2i(9, 16), "energy_mult": 1.1, "mesh_mult": 1.0},
+	FigureEnums.Depth.FAR:  {"smoothness": 0.3,  "alpha": 0.32, "scale_mult": 0.5, "z_index_range": Vector2i(1, 8),  "energy_mult": 0.6, "mesh_mult": 0.7},
 }
 
 ## Baseline burst tuning, scaled per-figure in _configure_particles().
@@ -178,7 +178,7 @@ func _apply_depth_visuals(depth: FigureEnums.Depth, duration: float) -> void:
 	var target_scale_mult: float = v.scale_mult
 	var target_mesh_size = Vector2.ONE * (_size * _padding * v.mesh_mult)
 
-	z_index = v.z_index
+	z_index = randi_range(v.z_index_range.x, v.z_index_range.y)
 
 	if duration <= 0.0:
 		_depth_scale_mult = target_scale_mult

@@ -10,10 +10,12 @@ class_name WorldAwakening
 ## drenaje pasivo corre en el _process() de LuminanceManager) — crear un
 ## Tween nuevo en cada señal competiría contra sí mismo sin parar.
 
+@onready var background_mesh: MeshInstance2D = $Background
+@onready var fog_mesh: MeshInstance2D = $FogLayer
 @onready var canvas_modulate: CanvasModulate = $CanvasModulate
 @onready var world_environment: WorldEnvironment = $WorldEnvironment
 @onready var world_particles: GPUParticles2D = $WorldParticles
-@onready var fog_material: ShaderMaterial = $BG/FogLayer.material
+@onready var fog_material: ShaderMaterial = $FogLayer.material
 
 # ---- Dark (t=0) — iguales a los valores actuales de la escena, así que
 # nada cambia visualmente en el estado de partida hasta el primer avance.
@@ -55,6 +57,8 @@ var _current_t := 0.0
 
 func _ready() -> void:
 	set_process(false)
+	_resize_backdrop()
+	get_window().size_changed.connect(_resize_backdrop)
 
 
 ## Conectar: luminance_manager.luminance_changed.connect(world_awakening.on_luminance_changed)
@@ -82,3 +86,25 @@ func _process(delta: float) -> void:
 	## la luminancia está estable.
 	if abs(_current_t - _target_t) < 0.001:
 		set_process(false)
+
+## ColorRect se autoajustaba solo, por sus anclas. QuadMesh no tiene
+## anclas — hay que decirle el tamaño a mano, y repetirlo cada vez que
+## la ventana cambia de tamaño.
+##
+## Se crea un QuadMesh nuevo en cada resize (no se reusa ni se comparte
+## con meshQuad.tres, el que ya usan Figure/Vignette) — mismo criterio
+## que ya aplicás en Figure.init() con duplicate(true) sobre el material,
+## para que ajustar el tamaño de esto no afecte a nadie más.
+func _resize_backdrop() -> void:
+	var viewport_size = get_viewport().get_visible_rect().size
+
+	var bg_quad := QuadMesh.new()
+	bg_quad.size = viewport_size
+	background_mesh.mesh = bg_quad
+
+	var fog_quad := QuadMesh.new()
+	fog_quad.size = viewport_size
+	fog_mesh.mesh = fog_quad
+
+	background_mesh.position = viewport_size / 2.0
+	fog_mesh.position = viewport_size / 2.0

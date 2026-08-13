@@ -61,6 +61,7 @@ var _last_quality := 0.0
 func begin(pos: Vector2) -> void:
 	super.begin(pos)
 	ritual_type = RitualConstants.TYPE_CONDENSE
+	z_index = ZLayers.RITUAL_VFX
 
 	trail.reset()
 	trail.modulate.a = 1.0

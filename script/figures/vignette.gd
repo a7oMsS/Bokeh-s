@@ -16,9 +16,9 @@ class_name Vignette
 var global_params: Dictionary
 
 const DEPTH_VISUALS := {
-	FigureEnums.Depth.NEAR: {"scale_mult": 1.5, "alpha": 0.85,  "z_index": 20, "edge_softness_mult": 2.2},
-	FigureEnums.Depth.MID:  {"scale_mult": 1.0, "alpha": 1.0, "z_index": 10, "edge_softness_mult": 1.0},
-	FigureEnums.Depth.FAR:  {"scale_mult": 0.6, "alpha": 0.7,  "z_index": 1,  "edge_softness_mult": 1.8},
+	FigureEnums.Depth.NEAR: {"scale_mult": 1.5, "alpha": 0.85, "z_index_range": Vector2i(17, 24), "edge_softness_mult": 2.2},
+	FigureEnums.Depth.MID:  {"scale_mult": 1.0, "alpha": 1.0, "z_index_range": Vector2i(9, 16), "edge_softness_mult": 1.0},
+	FigureEnums.Depth.FAR:  {"scale_mult": 0.6, "alpha": 0.7,  "z_index_range": Vector2i(1, 8),  "edge_softness_mult": 1.8},
 }
 
 @export var base_edge_softness := 0.12  # el valor por defecto que ya tenías en el shader
@@ -74,7 +74,7 @@ func _ready() -> void:
 	body_mesh.mesh.size = Vector2.ONE * base_mesh_size  # ⚠️ tamaño en pixeles, propuesta sin confirmar
 
 	var dv: Dictionary = DEPTH_VISUALS[_depth]
-	z_index = dv.z_index
+	z_index = randi_range(dv.z_index_range.x, dv.z_index_range.y)
 	scale = _base_scale * dv.scale_mult  # una sola vez, no derivamos con el tiempo
 
 	if base_material:

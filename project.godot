@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="Bokeh's"
-run/main_scene="uid://gnngim7spnvb"
+run/main_scene="uid://lu63m3o008rh"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 

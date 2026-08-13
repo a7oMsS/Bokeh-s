@@ -11,10 +11,21 @@
 [ext_resource type="Script" uid="uid://b6rjyu2tdrla8" path="res://script/managers/audio_manager.gd" id="9_gw4oy"]
 [ext_resource type="Script" uid="uid://d1eiotc0vs7ut" path="res://script/managers/shadow_manager.gd" id="10_xh2hw"]
 [ext_resource type="PackedScene" uid="uid://dy4flipw1ji5u" path="res://scenes/core/atmosphere.tscn" id="11_vesmp"]
+[ext_resource type="Texture2D" uid="uid://7w4m6m5sc2ci" path="res://assets/images/grunge_texture.png" id="12_8ixq4"]
+[ext_resource type="Shader" uid="uid://oi1yojbpq1cj" path="res://figures/shaders/vignette.gdshader" id="13_85lqr"]
 [ext_resource type="PackedScene" uid="uid://pr1pdr7mkhjq" path="res://scenes/ui/hud.tscn" id="15_85lqr"]
 [ext_resource type="AudioStream" uid="uid://0eind5l8ocuo" path="res://assets/music/peakk.mp3" id="22_7w87d"]
 [ext_resource type="AudioStream" uid="uid://dcreda575n0bc" path="res://assets/music/Bokeh's theme.mp3" id="23_ct3h4"]
 [ext_resource type="Script" uid="uid://cfw4nqpoutqhn" path="res://script/ux/camera_2d.gd" id="24_a2r2g"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_706d0"]
+blend_mode = 1
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_aenqa"]
+shader = ExtResource("13_85lqr")
+shader_parameter/outerRadius = 0.4790000227525
+shader_parameter/MainAlpha = 0.390000018525
+shader_parameter/vignette_color = Color(0, 0, 0, 1)
 
 [sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_7vnia"]
 streams_count = 2
@@ -57,18 +68,48 @@ script = ExtResource("9_gw4oy")
 [node name="ShadowManager" type="Node" parent="Managers" unique_id=632995959]
 script = ExtResource("10_xh2hw")
 
-[node name="ClicArea" type="ColorRect" parent="." unique_id=704783883]
+[node name="InputCapture" type="Control" parent="." unique_id=182995437]
+z_index = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(1, 1, 1, 0)
 
-[node name="Atmosphere" parent="ClicArea" unique_id=2068369354 instance=ExtResource("11_vesmp")]
+[node name="GameWorld" type="Node2D" parent="." unique_id=913650399]
+
+[node name="Atmosphere" parent="GameWorld" unique_id=2068369354 instance=ExtResource("11_vesmp")]
+
+[node name="FiguresLayer" type="Node2D" parent="GameWorld" unique_id=1570847964]
+
+[node name="ScreenEffects" type="CanvasLayer" parent="." unique_id=188178871]
+
+[node name="GrungeTexture" type="TextureRect" parent="ScreenEffects" unique_id=44385779]
+modulate = Color(0.8392157, 0.8392157, 0.8392157, 0.023529412)
+z_index = 30
+material = SubResource("CanvasItemMaterial_706d0")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_8ixq4")
+expand_mode = 1
+
+[node name="Vignette" type="ColorRect" parent="ScreenEffects" unique_id=850803827]
+z_index = 50
+material = SubResource("ShaderMaterial_aenqa")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
 
 [node name="HUD" parent="." unique_id=1669824374 instance=ExtResource("15_85lqr")]
+layer = 2
 
 [node name="BgMusic" type="AudioStreamPlayer" parent="." unique_id=929896588]
 stream = SubResource("AudioStreamRandomizer_7vnia")
@@ -78,3 +119,5 @@ autoplay = true
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1705537701]
 position_smoothing_speed = 0.1
 script = ExtResource("24_a2r2g")
+
+[editable path="GameWorld/Atmosphere"]

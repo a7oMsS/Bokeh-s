@@ -5,7 +5,7 @@ extends Control
 ## y nada más cambia.
 @export var world_id: String = "world_1"
 
-@onready var clic_area = $ClicArea
+@onready var input_capture = $InputCapture 
 
 @onready var input_ritual_manager = $Managers/InputRitualManager
 @onready var ritual_controller = $Managers/RitualController
@@ -15,21 +15,24 @@ extends Control
 @onready var score_manager = $Managers/ScoreManager
 @onready var audio_manager = $Managers/AudioManager
 @onready var luminance_manager = $Managers/LuminanceManager
-@onready var container = $ClicArea/Atmosphere/FiguresLayer
-@onready var world_awakening = $ClicArea/Atmosphere
+
+@onready var container = $GameWorld/FiguresLayer
+@onready var world_awakening = $GameWorld/Atmosphere  
+
 @onready var camera = $Camera2D
 @onready var hud = $HUD
 
 func _ready():
 	luminance_manager.setup(figure_manager, shadow_manager)
 	hud.setup(figure_manager)
+	container.z_index = ZLayers.GAMEPLAY
 
 	SaveManager.set_current_world(world_id)
 	if SaveManager.has_save():
 		SaveManager.load_game()
 
-	clic_area.gui_input.connect(input_ritual_manager.process_input)
-	clic_area.gui_input.connect(camera.process_input)
+	input_capture.gui_input.connect(input_ritual_manager.process_input)
+	input_capture.gui_input.connect(camera.process_input)
 	luminance_manager.luminance_changed.connect(hud.update_luminance)
 
 	# Input → Ritual
