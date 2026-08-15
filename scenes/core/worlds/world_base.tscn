@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dgixdrpv1r51f" path="res://script/core/world.gd" id="1_3vwhi"]
 [ext_resource type="Script" uid="uid://xuin6gkvk3wd" path="res://script/managers/figure_manager.gd" id="2_hy6gk"]
-[ext_resource type="Resource" uid="uid://cxyheed1umhoy" path="res://resources/worlds/world_1_config.tres" id="2_ujrm7"]
+[ext_resource type="Script" uid="uid://c5sjcyc387mu0" path="res://script/core/world_config.gd" id="2_ujrm7"]
 [ext_resource type="Script" uid="uid://ceik42gwuifjx" path="res://script/managers/input_ritual_manager.gd" id="3_51vpm"]
 [ext_resource type="Script" uid="uid://dioj40rquml8c" path="res://script/managers/invocation_controller_manager.gd" id="4_gdgq5"]
 [ext_resource type="Script" uid="uid://c6rb421iq6qqd" path="res://script/managers/ritual_controller.gd" id="5_iaoyq"]
@@ -18,6 +18,15 @@
 [ext_resource type="AudioStream" uid="uid://0eind5l8ocuo" path="res://assets/music/peakk.mp3" id="22_7w87d"]
 [ext_resource type="AudioStream" uid="uid://dcreda575n0bc" path="res://assets/music/Bokeh's theme.mp3" id="23_ct3h4"]
 [ext_resource type="Script" uid="uid://cfw4nqpoutqhn" path="res://script/ux/camera_2d.gd" id="24_a2r2g"]
+
+[sub_resource type="Resource" id="Resource_2yrm6"]
+script = ExtResource("2_ujrm7")
+world_id = "world_base"
+energia_total = 300.0
+vignette_limit = 0
+spawn_interval = 0.0
+initial_count = 0
+metadata/_custom_type_script = "uid://c5sjcyc387mu0"
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_706d0"]
 blend_mode = 1
@@ -41,7 +50,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_3vwhi")
-world_config = ExtResource("2_ujrm7")
+world_config = SubResource("Resource_2yrm6")
 
 [node name="Managers" type="Node" parent="." unique_id=1030075532]
 

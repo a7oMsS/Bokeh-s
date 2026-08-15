@@ -1,7 +1,7 @@
 extends Control
 class_name StartScreen
 
-const WORLD_1_SCENE := "res://scenes/core/worlds/world_1.tscn"
+const WORLD_1_SCENE := "res://scenes/core/worlds/world_base.tscn"
 const PROLOGUE_SCENE := "res://scenes/core/prologue.tscn"
 
 
@@ -52,10 +52,7 @@ func _play_fade_in(e: InputEvent) -> void:
 
 func _start_game(anim_name) -> void:
 	if anim_name == "play":
-		if SaveManager.has_save():
-			get_tree().change_scene_to_file(WORLD_1_SCENE)
-		else:
-			get_tree().change_scene_to_file(PROLOGUE_SCENE)
+		get_tree().change_scene_to_file(WORLD_1_SCENE)
 
 func _on_config_pressed() -> void:
 	settings_panel.visible = not settings_panel.visible

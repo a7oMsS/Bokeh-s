@@ -1,6 +1,6 @@
 extends Node
 
-const SAVE_PATH := "user://save.dat"
+const SAVE_PATH := "user://save11.dat"
 
 var _current_world_id := ""
 
