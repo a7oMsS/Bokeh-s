@@ -1,19 +1,8 @@
 extends Node
-class_name SaverManager
 
-const SAVE_PATH := "user://save3.dat"
+const SAVE_PATH := "user://save.dat"
 
 var _current_world_id := ""
-
-## Contrato: cualquier nodo que quiera persistir se une a uno de estos dos
-## grupos e implementa ambos métodos. SaveManager nunca necesita saber qué
-## guarda cada uno por dentro.
-##   "saveable_player" → Explorer, mastery/catálogo (persiste siempre)
-##   "saveable_world"  → LuminanceManager, ShadowManager (por mundo)
-##
-##   get_save_data() -> Dictionary
-##   load_save_data(data: Dictionary) -> void
-
 
 func set_current_world(world_id: String) -> void:
 	_current_world_id = world_id

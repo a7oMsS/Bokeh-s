@@ -1,28 +1,10 @@
 extends Node
 class_name LuminanceManager
 
-## Reescritura completa del sistema viejo (niveles de condensación, umbrales
-## repetidos, bonus por cúmulo, decaimiento por inactividad). Todo eso queda
-## reemplazado por el modelo que cerramos en las simulaciones:
-##
-##   Energia_total = techo fijo del mundo, nunca crece
-##   current_luminance = el único valor que se guarda
-##   Sombra = Energia_total - current_luminance   (derivado, nunca se guarda)
-##
-## Eventos:
-##   invocar un Bokeh:              +12
-##   cada Bokeh vivo, por segundo:  +1
-##   nace un Vignette nuevo:        -8   (los ambientales del inicio NO cuentan)
-##   cada Vignette vivo, por seg.:  -0.5
-##   dispersar un Vignette:         +3
-##
-## El Élite queda pendiente a propósito — no hay ningún gancho para él
-## todavía, ni siquiera comentado.
-
 signal luminance_changed(current: float, max_value: float)
 signal world_purified()
 
-@export var energia_total: float = 300.0
+@export var energia_total: float = 1200.0
 
 var current_luminance: float = 0.0
 

@@ -29,7 +29,7 @@ var all_personalities: Array[FigureEnums.PersonalityType] = [
 
 # ======== Unlocked subset ========
 var shapes: Array[FigureEnums.Shape] = [FigureEnums.Shape.CIRCLE]
-var styles: Array[FigureEnums.Style] = [FigureEnums.Style.GRADIENT]
+var styles: Array[FigureEnums.Style] = [FigureEnums.Style.SOLID]
 var sizes: Array[FigureEnums.SizeCategory] = [FigureEnums.SizeCategory.SMALL]
 var personalities: Array[FigureEnums.PersonalityType] = [
 	FigureEnums.PersonalityType.STATIC

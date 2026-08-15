@@ -1,8 +1,5 @@
 extends Control
 
-## Nombre del mundo para SaveManager — placeholder hasta que exista
-## WorldConfig; cuando llegue, esta línea pasa a world_config.world_id
-## y nada más cambia.
 @export var world_config: WorldConfig
 
 @onready var input_capture = $InputCapture 
