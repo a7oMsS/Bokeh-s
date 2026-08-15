@@ -52,7 +52,7 @@ const INTEGRIDAD_SIZE_MULT_MAX := 1.3
 ## Poder ofensivo contra Vignette. 30/7 es el valor confirmado para Mid;
 ## Near y Far golpean menos por estar fuera de foco — multiplicadores ⚠️
 ## propuestos, sin confirmar.
-const POWER_BASE := 0.0 / 7.0
+const POWER_BASE := 30.0 / 7.0
 const POWER_BY_DEPTH := {
 	FigureEnums.Depth.NEAR: 0.5,
 	FigureEnums.Depth.MID: 1.0,

@@ -1,7 +1,7 @@
 extends Node
 class_name SaverManager
 
-const SAVE_PATH := "user://save.dat"
+const SAVE_PATH := "user://save3.dat"
 
 var _current_world_id := ""
 

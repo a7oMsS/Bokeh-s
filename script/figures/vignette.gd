@@ -15,6 +15,19 @@ class_name Vignette
 
 var global_params: Dictionary
 
+@export var elite_densidad := 110.0
+@export var elite_power_multiplier := 2.5   # mismo factor que ya usaste para el drenaje pasivo del Elite
+@export var elite_scale_mult := 2.0          # ⚠️ propuesta, para que se note mas grande
+@export var elite_color: Color = Color(0.222, 0.174, 0.294, 1.0)
+@export var elite_color_bleed: Color = Color(0.092, 0.885, 0.885, 1.0)
+
+@export var seek_speed := 40.0            # ⚠️ propuesta, sin confirmar
+@export var seek_stop_distance := 60.0    # deja de acercarse una vez esta en rango de combate
+
+var _seek_target: Node = null
+
+var is_elite: bool = false
+
 const DEPTH_VISUALS := {
 	FigureEnums.Depth.NEAR: {"scale_mult": 1.5, "alpha": 0.85, "z_index_range": Vector2i(17, 24), "edge_softness_mult": 2.2},
 	FigureEnums.Depth.MID:  {"scale_mult": 1.0, "alpha": 1.0, "z_index_range": Vector2i(9, 16), "edge_softness_mult": 1.0},
@@ -26,7 +39,7 @@ const DEPTH_VISUALS := {
 var _depth: FigureEnums.Depth
 
 @export var base_material: ShaderMaterial
-@export var combat_radius := 350.0  # mismo valor que el aura de purificación de Bokeh
+@export var combat_radius := 300.0  # mismo valor que el aura de purificación de Bokeh
 @export var tick_interval := 60.0 / 48.0  # 70bpm
 
 ## ⚠️ Multiplicadores de dureza sin confirmar contigo -- primera propuesta.
@@ -37,7 +50,8 @@ var _depth: FigureEnums.Depth
 	VignetteEnums.Hardness.DENSE: 1.4,
 }
 
-@export var power := 0.0  # daño infligido a Bokeh, por tick, dentro de rango
+@export var base_power := 1.5
+var power: float
 @export var regen_ticks_required := 6
 @export var regen_rate := 1.5  # /seg -- menor que el daño recibido, según acordamos
 @export var base_mesh_size := 180.0  # ⚠️ orden de magnitud a ojo, ajústalo viéndolo en pantalla
@@ -59,11 +73,19 @@ var _dispersed := false
 func init(params: Dictionary) -> void:
 	global_params = params
 	hardness = params.get("hardness", VignetteEnums.Hardness.NORMAL)
-	noise_seed = params.get("noise_seed", 1.0)
+	is_elite = params.get("is_elite", false)
 	position = params.position
-	max_densidad = base_densidad * hardness_multipliers.get(hardness, 1.0)
+
+	if is_elite:
+		max_densidad = elite_densidad
+		power = base_power * elite_power_multiplier
+	else:
+		max_densidad = base_densidad * hardness_multipliers.get(hardness, 1.0)
+		power = base_power
+
 	densidad = max_densidad
-	_base_scale = Vector2.ONE * params.get("size", 1.0)
+	_base_scale = Vector2.ONE * params.get("size", 1.0) * (elite_scale_mult if is_elite else 1.0)
+	noise_seed = params.get("noise_seed", 1.0)
 	_depth = params.get("depth", FigureEnums.Depth.MID)
 
 
@@ -81,6 +103,10 @@ func _ready() -> void:
 		_shader_material = base_material.duplicate(true)
 		body_mesh.material = _shader_material
 		_shader_material.set_shader_parameter("edge_softness", base_edge_softness * dv.edge_softness_mult)
+		
+		if is_elite:
+			_shader_material.set_shader_parameter("color_dark", elite_color)
+			_shader_material.set_shader_parameter("color_bleed", elite_color_bleed)
 	else:
 		push_warning("material not founded: %s" % base_material)
 		return
@@ -89,6 +115,8 @@ func _ready() -> void:
 	if noise_tex is NoiseTexture2D:
 		if noise_tex.noise:
 			noise_tex.noise.seed = noise_seed
+			
+		
 
 	scale = Vector2.ZERO
 	modulate.a = 0.0
@@ -98,6 +126,14 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	if _dispersed:
 		return
+
+	if _seek_target != null:
+		if not is_instance_valid(_seek_target):
+			_seek_target = null  # el objetivo murio -- el Vignette "gano", vuelve a estar quieto
+		else:
+			var to_target = _seek_target.global_position - global_position
+			if to_target.length() > seek_stop_distance:
+				position += to_target.normalized() * seek_speed * delta
 
 	_tick_timer += delta
 	if _tick_timer >= tick_interval:
@@ -109,6 +145,7 @@ func _process(delta: float) -> void:
 	if _ticks_since_hit >= regen_ticks_required and densidad < max_densidad:
 		densidad = min(max_densidad, densidad + regen_rate * delta)
 		_update_visual()
+
 
 
 ## Devuelve true si este Vignette recibió daño en este tick (para que
@@ -131,9 +168,21 @@ func _resolve_combat_tick() -> bool:
 
 	if incoming > 0.0:
 		take_damage(incoming)
+		if _seek_target == null:
+			_seek_target = _pick_closest(nearby_bokeh)
 		return true
 	return false
 
+
+func _pick_closest(candidates: Array) -> Node:
+	var closest: Node = null
+	var closest_dist := INF
+	for b in candidates:
+		var d = global_position.distance_to(b.global_position)
+		if d < closest_dist:
+			closest_dist = d
+			closest = b
+	return closest
 
 func take_damage(amount: float) -> void:
 	if amount <= 0.0 or _dispersed:
@@ -160,6 +209,9 @@ func _update_visual() -> void:
 
 func appear() -> void:
 	var dv: Dictionary = DEPTH_VISUALS[_depth]
+	
+	if is_elite:
+		dv = DEPTH_VISUALS[FigureEnums.Depth.MID]
 	var tween := create_tween()
 	tween.tween_property(self, "scale", _base_scale * dv.scale_mult, 0.6) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)

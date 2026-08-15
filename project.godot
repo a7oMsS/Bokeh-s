@@ -15,7 +15,7 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 [application]
 
 config/name="Bokeh's"
-run/main_scene="uid://lu63m3o008rh"
+run/main_scene="uid://1xttny8be8a3"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
@@ -29,11 +29,7 @@ EventBusAuto="*res://script/utils/event_bus.gd"
 CondenseAudioManager="*res://script/managers/audio_manager.gd"
 Explorer="*res://script/managers/explorer_manager.gd"
 SaveManager="*uid://csqkp2qn5fkow"
-
-[display]
-
-window/size/viewport_width=1280
-window/size/viewport_height=720
+SettingsManager="*uid://dwnawlgqpd1v"
 
 [editor_plugins]
 

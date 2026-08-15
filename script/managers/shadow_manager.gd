@@ -18,7 +18,10 @@ var active_vignette: Array = []
 ## (nunca restan luminancia), true para los que nacen durante la partida.
 signal vignette_spawned(vig: Node, counts_as_spawn: bool)
 signal vignette_dispersed(vig: Node)
+signal elite_spawned(vig: Node)
+signal elite_defeated(vig: Node)
 
+var _elite: Node = null
 
 # ======== Catálogo de variantes ========
 # Solo tres ejes: tamaño, dureza, personalidad — nunca forma ni color.
@@ -139,28 +142,58 @@ func _random_edge_biased_position() -> Vector2:
 
 # ---------------- Instanciación ----------------
 
-func _spawn_at(pos: Vector2, counts_as_spawn: bool) -> Node:
+func _spawn_at(pos: Vector2, counts_as_spawn: bool, is_elite: bool = false) -> Node:
 	if vignette_scene == null:
 		push_warning("ShadowManager: vignette_scene no está asignado")
 		return null
 
 	var vig = vignette_scene.instantiate()
 	var params = generate_params(pos)
+	params["is_elite"] = is_elite
 	vig.init(params)
 	vignette_container.add_child(vig)
-	active_vignette.append(vig)
+
+	if is_elite:
+		_elite = vig
+	else:
+		active_vignette.append(vig)
+
 	vig.tree_exiting.connect(_on_vignette_tree_exiting.bind(vig))
 
-	emit_signal("vignette_spawned", vig, counts_as_spawn)
-	EventBusAuto.emit_signal("vignette_spawned", vig, counts_as_spawn)
+	if is_elite:
+		emit_signal("elite_spawned", vig)
+	else:
+		emit_signal("vignette_spawned", vig, counts_as_spawn)
+		EventBusAuto.emit_signal("vignette_spawned", vig, counts_as_spawn)
 	return vig
 
 
 func _on_vignette_tree_exiting(vig: Node) -> void:
-	active_vignette.erase(vig)
-	emit_signal("vignette_dispersed", vig)
-	EventBusAuto.emit_signal("vignette_dispersed", vig)
+	if vig.is_elite:
+		_elite = null
+		emit_signal("elite_defeated", vig)
+		EventBusAuto.emit_signal("elite_defeated", vig)
+	else:
+		active_vignette.erase(vig)
+		emit_signal("vignette_dispersed", vig)
 
+
+func spawn_elite() -> void:
+	if _elite != null:
+		return
+	_spawn_at(_find_stronghold_position(), true, true)
+
+
+## A diferencia de los Vignette normales (que buscan el punto MAS lejano de
+## cualquier Bokeh), el Elite ataca donde SI hay luz -- se ancla cerca de un
+## Bokeh vivo elegido al azar, con sesgo natural hacia clusters porque hay
+## mas chance de que el azar caiga ahi si varios Bokeh estan juntos.
+func _find_stronghold_position() -> Vector2:
+	if _figure_manager == null or _figure_manager.active_figures.is_empty():
+		return _random_edge_biased_position()  # caso raro: sin Bokeh vivos
+	var target = _figure_manager.active_figures[randi() % _figure_manager.active_figures.size()]
+	var offset = Vector2(randf_range(-200.0, 200.0), randf_range(-200.0, 200.0))
+	return target.global_position + offset
 
 # ---------------- Variantes ----------------
 

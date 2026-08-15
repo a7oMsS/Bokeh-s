@@ -1,0 +1,106 @@
+[gd_scene format=3 uid="uid://ced35a5se0h2q"]
+
+[ext_resource type="Theme" uid="uid://da8clmu3p12hv" path="res://assets/themes/bokehsTheme.tres" id="1_iwyam"]
+[ext_resource type="Script" uid="uid://b6p6fsrkp0q1i" path="res://script/ui/settings_panel.gd" id="2_32ria"]
+[ext_resource type="FontFile" uid="uid://bmxlt0oqoodhe" path="res://assets/fonts/SpecialGothicExpandedOne-Regular.ttf" id="2_wlg2l"]
+
+[sub_resource type="FontVariation" id="FontVariation_32ria"]
+base_font = ExtResource("2_wlg2l")
+variation_embolden = 0.65
+variation_transform = Transform2D(1, 0, 0, 1.3, 0, 0)
+spacing_glyph = 1
+
+[node name="SettingsPanel" type="Control" unique_id=351559740]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_iwyam")
+script = ExtResource("2_32ria")
+
+[node name="DarkBackdrop" type="ColorRect" parent="." unique_id=1006333154]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.47843137)
+
+[node name="PanelContainer" type="PanelContainer" parent="." unique_id=938728312]
+custom_minimum_size = Vector2(700, 350)
+custom_maximum_size = Vector2(700, -1)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.2
+anchor_top = 0.25
+anchor_right = 0.8
+anchor_bottom = 0.3
+grow_horizontal = 2
+theme = ExtResource("1_iwyam")
+theme_type_variation = &"settings"
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1595033393]
+layout_mode = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer" unique_id=1266723705]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="HFlowContainer" type="HFlowContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1874639530]
+layout_mode = 2
+
+[node name="Button2" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HFlowContainer" unique_id=546308160]
+modulate = Color(1, 1, 1, 0)
+layout_mode = 2
+mouse_filter = 2
+text = "X"
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/HFlowContainer" unique_id=803747656]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_fonts/font = SubResource("FontVariation_32ria")
+text = "Settings"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer/HFlowContainer" unique_id=1032507752]
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme = ExtResource("1_iwyam")
+theme_override_font_sizes/font_size = 17
+text = "X"
+flat = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=1773237397]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer" unique_id=628742947]
+layout_mode = 2
+theme_type_variation = &"labelPanel"
+text = "Language"
+
+[node name="LanguageDropdown" type="OptionButton" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer" unique_id=1593711250]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+mouse_default_cursor_shape = 2
+theme = ExtResource("1_iwyam")
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer" unique_id=925332149]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer2" unique_id=709954034]
+layout_mode = 2
+theme = ExtResource("1_iwyam")
+theme_type_variation = &"labelPanel"
+text = "Volume"
+
+[node name="VolumeSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/VBoxContainer2" unique_id=2095200088]
+layout_mode = 2
+
+[connection signal="pressed" from="PanelContainer/MarginContainer/VBoxContainer/HFlowContainer/Button" to="." method="_on_button_pressed"]

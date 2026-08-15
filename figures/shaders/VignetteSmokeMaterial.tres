@@ -16,7 +16,7 @@ in_3d_space = true
 [resource]
 shader = ExtResource("1_mb1eh")
 shader_parameter/noise_tex = SubResource("NoiseTexture2D_mb1eh")
-shader_parameter/color_dark = Color(0.06, 0.05, 0.09, 1)
+shader_parameter/color_dark = Color(0.05882353, 0.050980393, 0.09019608, 1)
 shader_parameter/color_bleed = Color(0.30943933, 0.012920001, 0.09320182, 1)
 shader_parameter/damage_ratio = 0.0
 shader_parameter/fog_speed = 0.10000000475

@@ -1,6 +1,188 @@
 [gd_scene format=3 uid="uid://1xttny8be8a3"]
 
 [ext_resource type="Script" uid="uid://dxy0pmac006i3" path="res://script/core/start_screen.gd" id="1_3gj35"]
+[ext_resource type="Texture2D" uid="uid://djhc0gi0gu2kv" path="res://assets/images/initial.png" id="2_dlg43"]
+[ext_resource type="Texture2D" uid="uid://cg6fw31e4f4co" path="res://assets/icons/config_normal.png" id="3_3o7vi"]
+[ext_resource type="Texture2D" uid="uid://c6cli4ivf1n4y" path="res://assets/icons/config_pressed.png" id="4_xx03i"]
+[ext_resource type="Texture2D" uid="uid://dxgs7qc4n74s4" path="res://assets/icons/config_hover.png" id="5_2yrm6"]
+[ext_resource type="FontFile" uid="uid://bc6ihu2xjdeg8" path="res://assets/fonts/3DIsometric-Black.ttf" id="6_3o7vi"]
+[ext_resource type="Script" uid="uid://cafctvv5i200e" path="res://script/ui/blink_label.gd" id="6_kcyp8"]
+[ext_resource type="PackedScene" uid="uid://ced35a5se0h2q" path="res://scenes/core/settings_panel.tscn" id="8_xx03i"]
+[ext_resource type="AudioStream" uid="uid://0eind5l8ocuo" path="res://assets/music/peakk.mp3" id="9_www4h"]
 
-[node name="StartScreen" type="Node2D" unique_id=1447070365]
+[sub_resource type="FontVariation" id="FontVariation_kcyp8"]
+base_font = ExtResource("6_3o7vi")
+variation_transform = Transform2D(1, 0, 0, 1.3, 0, 0)
+baseline_offset = 0.095
+
+[sub_resource type="Animation" id="Animation_3o7vi"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("BtnConfiguracion:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("TextureRect:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("BtnJugar:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Color(1, 1, 1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_xx03i"]
+resource_name = "play"
+length = 1.5
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("BtnConfiguracion:modulate")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("TextureRect:modulate")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/2/type = "value"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath("BtnJugar:modulate")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0, 1),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Color(1, 1, 1, 1), Color(1, 1, 1, 0)]
+}
+tracks/3/type = "method"
+tracks/3/imported = false
+tracks/3/enabled = true
+tracks/3/path = NodePath("BtnJugar")
+tracks/3/interp = 1
+tracks/3/loop_wrap = true
+tracks/3/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"_stop_tween"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_2yrm6"]
+_data = {
+&"RESET": SubResource("Animation_3o7vi"),
+&"play": SubResource("Animation_xx03i")
+}
+
+[sub_resource type="AudioStreamRandomizer" id="AudioStreamRandomizer_7vnia"]
+streams_count = 1
+stream_0/stream = ExtResource("9_www4h")
+
+[node name="StartScreen" type="Control" unique_id=191218107]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 script = ExtResource("1_3gj35")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1127658286]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=2099801778]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.15
+anchor_right = 0.85
+anchor_bottom = 0.9
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_dlg43")
+expand_mode = 2
+stretch_mode = 6
+
+[node name="BtnConfiguracion" type="TextureButton" parent="." unique_id=1882314381]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.91
+anchor_top = 0.842
+anchor_right = 0.975
+anchor_bottom = 0.958
+mouse_default_cursor_shape = 2
+texture_normal = ExtResource("3_3o7vi")
+texture_pressed = ExtResource("4_xx03i")
+texture_hover = ExtResource("5_2yrm6")
+ignore_texture_size = true
+stretch_mode = 4
+
+[node name="BtnJugar" type="Label" parent="." unique_id=25564411]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.658
+anchor_right = 1.0
+anchor_bottom = 0.847
+theme_override_fonts/font = SubResource("FontVariation_kcyp8")
+theme_override_font_sizes/font_size = 30
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("6_kcyp8")
+
+[node name="SettingsPanel" parent="." unique_id=1416127972 instance=ExtResource("8_xx03i")]
+layout_mode = 1
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=1150603591]
+libraries/ = SubResource("AnimationLibrary_2yrm6")
+
+[node name="BgMusic" type="AudioStreamPlayer" parent="." unique_id=1438258231]
+stream = SubResource("AudioStreamRandomizer_7vnia")
+volume_db = -7.614
+autoplay = true

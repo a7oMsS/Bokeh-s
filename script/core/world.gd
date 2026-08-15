@@ -3,7 +3,7 @@ extends Control
 ## Nombre del mundo para SaveManager — placeholder hasta que exista
 ## WorldConfig; cuando llegue, esta línea pasa a world_config.world_id
 ## y nada más cambia.
-@export var world_id: String = "world_1"
+@export var world_config: WorldConfig
 
 @onready var input_capture = $InputCapture 
 
@@ -24,10 +24,17 @@ extends Control
 
 func _ready():
 	luminance_manager.setup(figure_manager, shadow_manager)
+	luminance_manager.energia_total = world_config.energia_total
+	luminance_manager.emit_signal("luminance_changed", luminance_manager.current_luminance, luminance_manager.energia_total)
+
+	shadow_manager.vignette_limit = world_config.vignette_limit
+	shadow_manager.spawn_interval = world_config.spawn_interval
+	shadow_manager.initial_count = world_config.initial_count
+
 	hud.setup(figure_manager)
 	container.z_index = ZLayers.GAMEPLAY
 
-	SaveManager.set_current_world(world_id)
+	SaveManager.set_current_world(world_config.world_id)
 	if SaveManager.has_save():
 		SaveManager.load_game()
 
