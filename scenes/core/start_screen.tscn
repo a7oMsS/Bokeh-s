@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://dxgs7qc4n74s4" path="res://assets/icons/config_hover.png" id="5_2yrm6"]
 [ext_resource type="FontFile" uid="uid://bc6ihu2xjdeg8" path="res://assets/fonts/3DIsometric-Black.ttf" id="6_3o7vi"]
 [ext_resource type="Script" uid="uid://cafctvv5i200e" path="res://script/ui/blink_label.gd" id="6_kcyp8"]
-[ext_resource type="PackedScene" uid="uid://ced35a5se0h2q" path="res://scenes/core/settings_panel.tscn" id="8_xx03i"]
+[ext_resource type="PackedScene" uid="uid://ced35a5se0h2q" path="res://scenes/ui/settings_panel.tscn" id="8_xx03i"]
 [ext_resource type="AudioStream" uid="uid://0eind5l8ocuo" path="res://assets/music/peakk.mp3" id="9_www4h"]
 
 [sub_resource type="FontVariation" id="FontVariation_kcyp8"]

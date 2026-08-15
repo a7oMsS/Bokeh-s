@@ -1,26 +1,14 @@
 extends Node2D
 class_name CursorVisual
 
-## Reemplaza el cursor de sistema operativo por uno dibujado en Godot.
-## Motivo: un cursor de SO se dibuja fuera del bucle de Godot, con latencia
-## cero respecto al hardware — ningún nodo del motor puede igualar eso.
-## Dibujando el círculo base y el anillo de energía en el mismo nodo, en
-## el mismo _process()/_draw(), quedan sincronizados entre sí sin excepción.
-##
-## Reemplaza el Input.set_custom_mouse_cursor() que vivía en ClicArea —
-## quita esa línea de ahí, ya no hace nada útil una vez que el cursor de
-## SO está oculto.
+enum BaseVisibility { SHOWING, SCALING }
+enum ScaleState { SCALE_IN, STEADY, SCALE_OUT }
+enum EnergyState { HIDDEN, FADE_IN, HOLD, FADE_OUT }
 
-# -------------------------------------------------
-# Círculo base (estado "reposo")
-# -------------------------------------------------
 const BASE_RADIUS := 45.0
 const BASE_COLOR := Color(1.0, 1.0, 1.0, 0.552)
 const BASE_WIDTH := 3.0
 
-# -------------------------------------------------
-# Anillo de energía (estado "post-ritual")
-# -------------------------------------------------
 const SEGMENT_COUNT := 3
 const ENERGY_RADIUS := 65.0
 const ARC_WIDTH := 18.0
@@ -30,7 +18,7 @@ const START_ANGLE := deg_to_rad(60.0)
 
 const FADE_IN_TIME := 0.22
 const HOLD_TIME := 2.5
-const FADE_OUT_TIME := 0.48   # ~1.5s total
+const FADE_OUT_TIME := 0.48   
 
 const SCALE_IN_TIME := 0.35
 const SCALE_OUT_TIME := 0.22
@@ -41,11 +29,11 @@ const COLOR_HIGH := Color(0.85, 0.35, 0.95)   # magenta
 
 var _energy_gradient = Gradient.new()
 
-var _base_visible := "showing"  # showing | scaling |
+var _base_visible := BaseVisibility.SHOWING
 var _scale_timer := 0.0
-var _scale_state := "steady" 
+var _scale_state := ScaleState.STEADY
 
-var _energy_state := "hidden"   # hidden | fade_in | hold | fade_out
+var _energy_state := EnergyState.HIDDEN
 var _energy_timer := 0.0
 var _energy_alpha := 0.0
 var _energy_ratio := 0.0
@@ -88,10 +76,10 @@ func _ready() -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_HIDDEN
 	physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
 	set_process(true)
-	
+
 	_energy_gradient.offsets = PackedFloat32Array([0.3, 0.5, 0.7])
 	_energy_gradient.colors = PackedColorArray([COLOR_LOW, COLOR_MID, COLOR_HIGH])
-	
+
 	_rand.randomize()
 
 ## Conectar: input_ritual_manager.condense_started.connect(cursor_visual.on_condense_started)
@@ -99,51 +87,52 @@ func _ready() -> void:
 ## el protagonismo completo desde ahí.
 func on_condense_started(_pos: Vector2) -> void:
 	if Explorer.can_afford(RitualConstants.CONDENSE_ENERGY_COST):
-		_base_visible = "scaling"
-		_scale_state = "scale_out"
+		_base_visible = BaseVisibility.SCALING
+		_scale_state = ScaleState.SCALE_OUT
 	else:
 		_trigger_insufficient_energy_feedback()
-		
+
 
 ## Conectar: ritual_controller.ritual_resolved.connect(cursor_visual.on_ritual_resolved)
 ## Se llama tanto en éxito como en cancelación (BaseRitual siempre resuelve
 ## con un "result"). El círculo base vuelve en cualquier caso — el anillo
 ## de energía solo si de verdad hubo un ritual exitoso.
 func on_ritual_resolved(data: Dictionary) -> void:
-	_base_visible = "scaling"
-	_scale_state = "scale_in"
+	_base_visible = BaseVisibility.SCALING
+	_scale_state = ScaleState.SCALE_IN
 	_scale_timer = 0.0
-	
+
 	if data.get("result", "") == RitualConstants.RESULT_SUCCESS:
 		_energy_ratio = Explorer.energy_ratio()
-		_energy_state = "fade_in"
+		_energy_state = EnergyState.FADE_IN
 		_energy_timer = 0.0
-
 
 
 func _process(delta: float) -> void:
 	## CanvasLayer "hud" ya es espacio de pantalla — sin compensar cámara.
 	global_position = get_viewport().get_mouse_position()
 
-	if _energy_state != "hidden":
+	if _energy_state != EnergyState.HIDDEN:
 		## Lectura en vivo, no snapshot — si la energía regenera mientras
 		## el anillo está visible, se refleja frame a frame.
 		_energy_ratio = Explorer.energy_ratio()
 		_update_energy_fade(delta)
-		
-	if _base_visible == "scaling":
+
+	if _base_visible == BaseVisibility.SCALING:
 		_update_scale_trans(delta)
-		
+
 	if _shake_strength > 0.0:
 		_update_shake_cursor(delta)
 
 	queue_redraw()
+
 
 func _update_shake_cursor(delta: float) -> void:
 	var base_pos = get_viewport().get_mouse_position()
 	base_pos += Vector2(_rand.randf_range(-_shake_strength, _shake_strength), _rand.randf_range(-_shake_strength, _shake_strength))
 	_shake_strength = lerp(_shake_strength, 0.0, SHAKE_DECAY_RATE * delta)
 	global_position = base_pos
+
 
 func _trigger_insufficient_energy_feedback() -> void:
 	_shake_strength = SHAKE_STRENGTH
@@ -160,52 +149,52 @@ func _trigger_insufficient_energy_feedback() -> void:
 	_deny_tween.parallel().tween_property(self, "modulate:g", 1.0, DENIED_FLASH_TIME)
 	_deny_tween.parallel().tween_property(self, "modulate:b", 1.0, DENIED_FLASH_TIME)
 
+
 func _update_energy_fade(delta: float) -> void:
 	_energy_timer += delta
 	match _energy_state:
-		"fade_in":
+		EnergyState.FADE_IN:
 			_energy_alpha = clamp(_energy_timer / FADE_IN_TIME, 0.0, 1.0)
 			if _energy_timer >= FADE_IN_TIME:
-				_energy_state = "hold"
+				_energy_state = EnergyState.HOLD
 				_energy_timer = 0.0
-		"hold":
+		EnergyState.HOLD:
 			_energy_alpha = 1.0
 			if _energy_timer >= HOLD_TIME:
-				_energy_state = "fade_out"
+				_energy_state = EnergyState.FADE_OUT
 				_energy_timer = 0.0
-		"fade_out":
+		EnergyState.FADE_OUT:
 			_energy_alpha = 1.0 - clamp(_energy_timer / FADE_OUT_TIME, 0.0, 1.0)
 			if _energy_timer >= FADE_OUT_TIME:
-				_energy_state = "hidden"
+				_energy_state = EnergyState.HIDDEN
 				_energy_alpha = 0.0
+
 
 func _update_scale_trans(delta: float) -> void:
 	_scale_timer += delta
 	match _scale_state:
-		"scale_in":
+		ScaleState.SCALE_IN:
 			scale = Vector2.ONE * clamp(_scale_timer / SCALE_IN_TIME, 0.0, 1.0)
 			modulate.a = clamp(_scale_timer / SCALE_IN_TIME, 0.0, 1.0)
 			if _scale_timer >= SCALE_IN_TIME:
-				_scale_state = "steady"
+				_scale_state = ScaleState.STEADY
 				_scale_timer = 0.0
-		"steady":
-			_base_visible = "showing"
-			scale = scale
-			modulate.a = modulate.a
+		ScaleState.STEADY:
+			_base_visible = BaseVisibility.SHOWING
 			_scale_timer = 0.0
-		"scale_out":
+		ScaleState.SCALE_OUT:
 			scale = Vector2.ONE - (Vector2.ONE * clamp(_scale_timer / SCALE_OUT_TIME, 0.0, 1.0))
 			modulate.a = 1 - clamp(_scale_timer / SCALE_IN_TIME, 0.0, 1.0)
 			if _scale_timer >= SCALE_OUT_TIME:
-				_scale_state = "steady"
+				_scale_state = ScaleState.STEADY
 				_scale_timer = 0.0
-	
+
 
 func _draw() -> void:
 	draw_arc(Vector2.ZERO, BASE_RADIUS, 0.0, TAU, 32, BASE_COLOR, BASE_WIDTH, true)
 	_draw_bokeh_count()
 
-	if _energy_state != "hidden":
+	if _energy_state != EnergyState.HIDDEN:
 		_draw_energy_ring()
 
 
@@ -249,8 +238,8 @@ func _draw_bokeh_dots(active: int, limit: int) -> void:
 		return
 
 	var start_angle = BOKEH_ARC_CENTER_ANGLE - BOKEH_ARC_SPAN * 0.5
-	var spacing = BOKEH_ARC_SPAN / float(limit+1) if limit > 1 else 0.0
-	
+	var spacing = BOKEH_ARC_SPAN / float(limit + 1) if limit > 1 else 0.0
+
 	var dot_radius: float
 	if limit > 1:
 		var chord = 2.0 * BOKEH_RADIUS * sin(spacing * 0.5)
@@ -259,7 +248,7 @@ func _draw_bokeh_dots(active: int, limit: int) -> void:
 		dot_radius = BOKEH_DOT_MAX_RADIUS
 
 	for i in range(limit):
-		var angle = start_angle + (i+1) * spacing
+		var angle = start_angle + (i + 1) * spacing
 		var pos = Vector2(cos(angle), sin(angle)) * BOKEH_RADIUS
 		var lit = i < active
 		draw_circle(pos, dot_radius, BOKEH_COLOR_LIT if lit else BOKEH_COLOR_UNLIT)

@@ -1,28 +1,28 @@
 extends Node2D
 class_name Vignette
 
-## Vignette resuelve el combate, no Bokeh. Cada Vignette, en su propio tick,
-## busca los Bokeh dentro de combat_radius, les inflige su poder, y por
-## separado suma el poder de esos mismos Bokeh contra sí mismo. Si varios
-## Vignette están cerca del mismo Bokeh, el daño se acumula solo porque cada
-## uno corre este cálculo por su cuenta -- no hace falta coordinarlos entre
-## sí. Figure.gd solo necesita exponer take_damage(amount) y get_power().
+## Vignette resolves combat, not Bokeh. Each Vignette, on its own tick,
+## looks for Bokeh within combat_radius, deals its power to them, and
+## separately adds up those same Bokeh's power against itself. If several
+## Vignette are near the same Bokeh, damage stacks simply because each one
+## runs this calculation independently — no need to coordinate between
+## them. Figure.gd only needs to expose take_damage(amount) and get_power().
 ##
-## Estado básico para pruebas: solo personalidad Static. Nada de Drifting
-## todavía -- ni el campo lo sugiere como activo.
+## Basic state for testing: Static personality only. No Drifting yet —
+## nothing in this file suggests it's active either.
 
 @onready var body_mesh: MeshInstance2D = $Body/MeshInstance2D
 
 var global_params: Dictionary
 
-@export var elite_densidad := 110.0
-@export var elite_power_multiplier := 2.5   # mismo factor que ya usaste para el drenaje pasivo del Elite
-@export var elite_scale_mult := 2.0          # ⚠️ propuesta, para que se note mas grande
+@export var elite_density := 110.0
+@export var elite_power_multiplier := 2.5   # same factor already used for the Elite's passive drain
+@export var elite_scale_mult := 2.0          # ⚠️ proposed, to make it read as noticeably bigger
 @export var elite_color: Color = Color(0.222, 0.174, 0.294, 1.0)
 @export var elite_color_bleed: Color = Color(0.092, 0.885, 0.885, 1.0)
 
-@export var seek_speed := 40.0            # ⚠️ propuesta, sin confirmar
-@export var seek_stop_distance := 60.0    # deja de acercarse una vez esta en rango de combate
+@export var seek_speed := 40.0            # ⚠️ proposed, unconfirmed
+@export var seek_stop_distance := 60.0    # stops closing in once within combat range
 
 var _seek_target: Node = null
 
@@ -34,16 +34,16 @@ const DEPTH_VISUALS := {
 	FigureEnums.Depth.FAR:  {"scale_mult": 0.6, "alpha": 0.7,  "z_index_range": Vector2i(1, 8),  "edge_softness_mult": 1.8},
 }
 
-@export var base_edge_softness := 0.12  # el valor por defecto que ya tenías en el shader
+@export var base_edge_softness := 0.12  # the shader's own previous default
 
 var _depth: FigureEnums.Depth
 
 @export var base_material: ShaderMaterial
-@export var combat_radius := 300.0  # mismo valor que el aura de purificación de Bokeh
+@export var combat_radius := 300.0  # same value as Bokeh's own purification aura
 @export var tick_interval := 60.0 / 48.0  # 70bpm
 
-## ⚠️ Multiplicadores de dureza sin confirmar contigo -- primera propuesta.
-@export var base_densidad := 30.0
+## ⚠️ Hardness multipliers unconfirmed — first proposal.
+@export var base_density := 30.0
 @export var hardness_multipliers := {
 	VignetteEnums.Hardness.SOFT: 0.7,
 	VignetteEnums.Hardness.NORMAL: 1.0,
@@ -53,11 +53,11 @@ var _depth: FigureEnums.Depth
 @export var base_power := 1.5
 var power: float
 @export var regen_ticks_required := 6
-@export var regen_rate := 1.5  # /seg -- menor que el daño recibido, según acordamos
-@export var base_mesh_size := 180.0  # ⚠️ orden de magnitud a ojo, ajústalo viéndolo en pantalla
+@export var regen_rate := 1.5  # /sec — lower than incoming damage, as agreed
+@export var base_mesh_size := 180.0  # ⚠️ order of magnitude eyeballed, tune it on screen
 
-var densidad: float
-var max_densidad: float
+var density: float
+var max_density: float
 var noise_seed: int
 var hardness: VignetteEnums.Hardness
 
@@ -68,8 +68,8 @@ var _shader_material: ShaderMaterial
 var _dispersed := false
 
 
-## Solo guarda datos, no toca nodos hijos -- ShadowManager llama esto antes
-## de add_child(), igual que Figure.init().
+## Only stores data, doesn't touch child nodes -- ShadowManager calls this
+## before add_child(), same as Figure.init().
 func init(params: Dictionary) -> void:
 	global_params = params
 	hardness = params.get("hardness", VignetteEnums.Hardness.NORMAL)
@@ -77,13 +77,13 @@ func init(params: Dictionary) -> void:
 	position = params.position
 
 	if is_elite:
-		max_densidad = elite_densidad
+		max_density = elite_density
 		power = base_power * elite_power_multiplier
 	else:
-		max_densidad = base_densidad * hardness_multipliers.get(hardness, 1.0)
+		max_density = base_density * hardness_multipliers.get(hardness, 1.0)
 		power = base_power
 
-	densidad = max_densidad
+	density = max_density
 	_base_scale = Vector2.ONE * params.get("size", 1.0) * (elite_scale_mult if is_elite else 1.0)
 	noise_seed = params.get("noise_seed", 1.0)
 	_depth = params.get("depth", FigureEnums.Depth.MID)
@@ -93,30 +93,28 @@ func _ready() -> void:
 	add_to_group("vignette")
 
 	body_mesh.mesh = QuadMesh.new()
-	body_mesh.mesh.size = Vector2.ONE * base_mesh_size  # ⚠️ tamaño en pixeles, propuesta sin confirmar
+	body_mesh.mesh.size = Vector2.ONE * base_mesh_size  # ⚠️ size in pixels, proposed, unconfirmed
 
 	var dv: Dictionary = DEPTH_VISUALS[_depth]
 	z_index = randi_range(dv.z_index_range.x, dv.z_index_range.y)
-	scale = _base_scale * dv.scale_mult  # una sola vez, no derivamos con el tiempo
+	scale = _base_scale * dv.scale_mult  # once only, doesn't drift over time
 
 	if base_material:
 		_shader_material = base_material.duplicate(true)
 		body_mesh.material = _shader_material
 		_shader_material.set_shader_parameter("edge_softness", base_edge_softness * dv.edge_softness_mult)
-		
+
 		if is_elite:
 			_shader_material.set_shader_parameter("color_dark", elite_color)
 			_shader_material.set_shader_parameter("color_bleed", elite_color_bleed)
 	else:
-		push_warning("material not founded: %s" % base_material)
+		push_warning("material not found: %s" % base_material)
 		return
-	
+
 	var noise_tex = _shader_material.get_shader_parameter("noise_tex")
 	if noise_tex is NoiseTexture2D:
 		if noise_tex.noise:
 			noise_tex.noise.seed = noise_seed
-			
-		
 
 	scale = Vector2.ZERO
 	modulate.a = 0.0
@@ -129,7 +127,7 @@ func _process(delta: float) -> void:
 
 	if _seek_target != null:
 		if not is_instance_valid(_seek_target):
-			_seek_target = null  # el objetivo murio -- el Vignette "gano", vuelve a estar quieto
+			_seek_target = null  # target died -- the Vignette "won", goes back to idle
 		else:
 			var to_target = _seek_target.global_position - global_position
 			if to_target.length() > seek_stop_distance:
@@ -142,14 +140,13 @@ func _process(delta: float) -> void:
 		if not hit_this_tick:
 			_ticks_since_hit += 1
 
-	if _ticks_since_hit >= regen_ticks_required and densidad < max_densidad:
-		densidad = min(max_densidad, densidad + regen_rate * delta)
+	if _ticks_since_hit >= regen_ticks_required and density < max_density:
+		density = min(max_density, density + regen_rate * delta)
 		_update_visual()
 
 
-
-## Devuelve true si este Vignette recibió daño en este tick (para que
-## _process sepa si debe reiniciar o incrementar el contador de regeneración).
+## Returns true if this Vignette took damage this tick (so _process knows
+## whether to reset or increment the regen counter).
 func _resolve_combat_tick() -> bool:
 	var nearby_bokeh: Array = []
 	for node in get_tree().get_nodes_in_group("bokeh"):
@@ -184,13 +181,14 @@ func _pick_closest(candidates: Array) -> Node:
 			closest = b
 	return closest
 
+
 func take_damage(amount: float) -> void:
 	if amount <= 0.0 or _dispersed:
 		return
-	densidad -= amount
+	density -= amount
 	_ticks_since_hit = 0
 	_update_visual()
-	if densidad <= 0.0:
+	if density <= 0.0:
 		disperse()
 
 
@@ -198,24 +196,24 @@ func get_power() -> float:
 	return power
 
 
-## Único punto de reacción visual al daño: el uniform damage_ratio del
-## shader. Nada de escala ni modulate -- solo color, según acordamos.
+## Only point of visual reaction to damage: the shader's damage_ratio
+## uniform. No scale or modulate change -- color only, as agreed.
 func _update_visual() -> void:
 	if _shader_material == null:
 		return
-	var ratio = clamp(densidad / max_densidad, 0.0, 1.0)
+	var ratio = clamp(density / max_density, 0.0, 1.0)
 	_shader_material.set_shader_parameter("damage_ratio", 1.0 - ratio)
 
 
 func appear() -> void:
 	var dv: Dictionary = DEPTH_VISUALS[_depth]
-	
+
 	if is_elite:
 		dv = DEPTH_VISUALS[FigureEnums.Depth.MID]
 	var tween := create_tween()
 	tween.tween_property(self, "scale", _base_scale * dv.scale_mult, 0.6) \
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.parallel().tween_property(self, "modulate:a", dv.alpha, 0.4) 
+	tween.parallel().tween_property(self, "modulate:a", dv.alpha, 0.4)
 
 
 func disperse() -> void:

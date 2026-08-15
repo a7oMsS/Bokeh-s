@@ -1,21 +1,12 @@
 extends Node
 class_name ShadowManager
 
-## Paralelo a FigureManager: este manager decide CUÁNDO y DÓNDE nace un
-## Vignette y qué variante le toca. No resuelve combate — eso vive en cada
-## instancia (ver nota de arquitectura en vignette.gd), y tampoco dibuja
-## nada — el shader de humo llega con la escena de Vignette.
-
 @export var vignette_scene = preload("res://scenes/objects/vignette.tscn")
 
 var active_vignette: Array = []
 
-## Tope global en pantalla. Escala por diseño de mundo, no por maestría del
-## Explorador — a diferencia del cupo de Bokeh, que sí crece con progresión.
 @export var vignette_limit := 16
 
-## counts_as_spawn: false para los Vignette ambientales del inicio del mundo
-## (nunca restan luminancia), true para los que nacen durante la partida.
 signal vignette_spawned(vig: Node, counts_as_spawn: bool)
 signal vignette_dispersed(vig: Node)
 signal elite_spawned(vig: Node)
@@ -23,10 +14,6 @@ signal elite_defeated(vig: Node)
 
 var _elite: Node = null
 
-# ======== Catálogo de variantes ========
-# Solo tres ejes: tamaño, dureza, personalidad — nunca forma ni color.
-# Sin catálogo bloqueado/desbloqueado como en FigureManager: los Vignette no
-# escalan por progreso del jugador, solo por diseño del mundo.
 var all_hardness: Array[VignetteEnums.Hardness] = [
 	VignetteEnums.Hardness.SOFT, VignetteEnums.Hardness.NORMAL, VignetteEnums.Hardness.DENSE,
 ]
@@ -51,12 +38,9 @@ var vignette_container: Node
 
 
 func _ready() -> void:
-	set_process(false)  # arranca inactivo; start_world() lo activa
+	set_process(false) 
 
 
-## Llamar al iniciar un mundo nuevo. fm es el FigureManager de esa partida —
-## se usa solo para leer posiciones de Bokeh activos al decidir dónde nace
-## el próximo Vignette, nunca para modificarlo.
 func start_world(fm: FigureManager, container: Node) -> void:
 	_figure_manager = fm
 	vignette_container = container
@@ -83,17 +67,11 @@ func _process(delta: float) -> void:
 		_try_spawn_procedural()
 
 
-# ---------------- Población inicial ----------------
-
-## Ambiental: ya están ahí desde el segundo 0. A propósito NO pasa por
-## _try_spawn_procedural() — los iniciales no cuentan como "spawn" para la
-## economía de Luminancia, solo los que nacen durante la partida.
 func _spawn_initial_population() -> void:
 	for i in range(initial_count):
 		_spawn_at(_random_edge_biased_position(), false)
 
 
-# ---------------- Spawn procedural ----------------
 
 func _try_spawn_procedural() -> void:
 	if active_vignette.size() >= vignette_limit:
@@ -101,8 +79,6 @@ func _try_spawn_procedural() -> void:
 	_spawn_at(_find_least_defended_position(), true)
 
 
-## Entre varios candidatos sesgados a los bordes, elige el más lejano a
-## cualquier Bokeh activo — "se filtra por donde no hay luz".
 func _find_least_defended_position() -> Vector2:
 	const CANDIDATES := 10
 	var best_pos := Vector2.ZERO
@@ -115,7 +91,6 @@ func _find_least_defended_position() -> Vector2:
 			best_pos = candidate
 	return best_pos
 
-
 func _distance_to_nearest_bokeh(pos: Vector2) -> float:
 	if _figure_manager == null or _figure_manager.active_figures.is_empty():
 		return INF
@@ -125,10 +100,6 @@ func _distance_to_nearest_bokeh(pos: Vector2) -> float:
 			nearest = min(nearest, pos.distance_to(fig.global_position))
 	return nearest
 
-
-## Sesga la posición hacia los cuatro bordes de pantalla, nunca al tercio
-## central — coherente con el propio nombre Vignette: el viñeteado
-## fotográfico real oscurece primero las esquinas, no el centro.
 func _random_edge_biased_position() -> Vector2:
 	var screen = DisplayServer.window_get_size()
 	var margin := 60.0
@@ -140,11 +111,9 @@ func _random_edge_biased_position() -> Vector2:
 		_: return Vector2(randf_range(screen.x * 0.75, screen.x - margin), randf_range(margin, screen.y - margin))
 
 
-# ---------------- Instanciación ----------------
-
 func _spawn_at(pos: Vector2, counts_as_spawn: bool, is_elite: bool = false) -> Node:
 	if vignette_scene == null:
-		push_warning("ShadowManager: vignette_scene no está asignado")
+		push_warning("ShadowManager: vignette_scene is not assigned")
 		return null
 
 	var vig = vignette_scene.instantiate()
@@ -172,7 +141,6 @@ func _on_vignette_tree_exiting(vig: Node) -> void:
 	if vig.is_elite:
 		_elite = null
 		emit_signal("elite_defeated", vig)
-		EventBusAuto.emit_signal("elite_defeated", vig)
 	else:
 		active_vignette.erase(vig)
 		emit_signal("vignette_dispersed", vig)
@@ -183,11 +151,6 @@ func spawn_elite() -> void:
 		return
 	_spawn_at(_find_stronghold_position(), true, true)
 
-
-## A diferencia de los Vignette normales (que buscan el punto MAS lejano de
-## cualquier Bokeh), el Elite ataca donde SI hay luz -- se ancla cerca de un
-## Bokeh vivo elegido al azar, con sesgo natural hacia clusters porque hay
-## mas chance de que el azar caiga ahi si varios Bokeh estan juntos.
 func _find_stronghold_position() -> Vector2:
 	if _figure_manager == null or _figure_manager.active_figures.is_empty():
 		return _random_edge_biased_position()  # caso raro: sin Bokeh vivos
@@ -195,11 +158,7 @@ func _find_stronghold_position() -> Vector2:
 	var offset = Vector2(randf_range(-200.0, 200.0), randf_range(-200.0, 200.0))
 	return target.global_position + offset
 
-# ---------------- Variantes ----------------
 
-## A diferencia de Figure.generate_params(), no hay forma ni color que
-## resolver, y personality no se incluye — Vignette.gd por ahora solo corre
-## en su estado Static, sin ninguna rama que lea este dato.
 func generate_params(position: Vector2) -> Dictionary:
 	var size_category = get_random_size_category()
 	return {
@@ -222,9 +181,6 @@ func get_random_size_category() -> VignetteEnums.SizeCategory:
 func get_random_depth() -> FigureEnums.Depth:
 	return ALL_DEPTHS[randi() % ALL_DEPTHS.size()]
 
-## Escala visual por categoría — mucho más sutil que el rango de tamaños de
-## Bokeh, a propósito: Vignette debe leerse sobrio, no llamativo.
-## ⚠️ Rangos propuestos por mí, sin confirmar contigo.
 func get_scale_by_category(category: VignetteEnums.SizeCategory) -> float:
 	match category:
 		VignetteEnums.SizeCategory.SMALL: return randf_range(0.75, 0.9)
@@ -233,7 +189,6 @@ func get_scale_by_category(category: VignetteEnums.SizeCategory) -> float:
 		_: return get_scale_by_category(get_random_size_category())
 
 
-# ---------------- Consulta ----------------
 
 func get_active_count() -> int:
 	return active_vignette.size()

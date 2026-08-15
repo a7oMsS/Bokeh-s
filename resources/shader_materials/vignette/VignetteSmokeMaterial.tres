@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://bqwd38ryhcvc3"]
 
-[ext_resource type="Shader" uid="uid://dj7d1eyj0toiq" path="res://figures/shaders/vignette_shader.gdshader" id="1_mb1eh"]
+[ext_resource type="Shader" uid="uid://dj7d1eyj0toiq" path="res://resources/shaders/vignette/vignette_shader.gdshader" id="1_mb1eh"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_fg3q0"]
 noise_type = 2

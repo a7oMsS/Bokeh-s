@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dhtwm4c5pkov0"]
 
 [ext_resource type="Script" uid="uid://cgxw1vs7cqm0y" path="res://script/core/prologue.gd" id="1_ncisi"]
-[ext_resource type="PackedScene" uid="uid://duijaqv0t47tq" path="res://resources/prologue_world.tscn" id="2_p0ld2"]
+[ext_resource type="PackedScene" uid="uid://duijaqv0t47tq" path="res://scenes/core/worlds/prologue_world.tscn" id="2_p0ld2"]
 
 [node name="Prologue" type="Control" unique_id=1000965520]
 layout_mode = 3

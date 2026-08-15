@@ -1,6 +1,6 @@
 [gd_resource type="ShaderMaterial" format=3 uid="uid://dlhoia4ynrkvk"]
 
-[ext_resource type="Shader" uid="uid://va0fx6c71hoa" path="res://figures/shaders/SDFOutline_Gradient.gdshader" id="1_2l2qb"]
+[ext_resource type="Shader" uid="uid://va0fx6c71hoa" path="res://resources/shaders/bokeh/SDFOutline_Gradient.gdshader" id="1_2l2qb"]
 
 [resource]
 shader = ExtResource("1_2l2qb")

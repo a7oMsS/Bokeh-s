@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://cn3bxaaxyi6fo"]
 
-[ext_resource type="Script" uid="uid://b4ikwudfxde74" path="res://script/figures/vignette.gd" id="1_e52v5"]
-[ext_resource type="Material" uid="uid://bqwd38ryhcvc3" path="res://figures/shaders/VignetteSmokeMaterial.tres" id="2_1nbex"]
-[ext_resource type="QuadMesh" uid="uid://dkvymynqswggj" path="res://figures/shaders/meshQuad.tres" id="3_gmyfe"]
+[ext_resource type="Script" uid="uid://b4ikwudfxde74" path="res://script/vignette/vignette.gd" id="1_e52v5"]
+[ext_resource type="Material" uid="uid://bqwd38ryhcvc3" path="res://resources/shader_materials/vignette/VignetteSmokeMaterial.tres" id="2_1nbex"]
+[ext_resource type="QuadMesh" uid="uid://dkvymynqswggj" path="res://resources/mesh/meshQuad.tres" id="3_gmyfe"]
 
 [node name="Vignette" type="Node2D" unique_id=1928826740]
 script = ExtResource("1_e52v5")

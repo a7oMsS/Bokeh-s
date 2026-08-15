@@ -12,24 +12,23 @@ var global_params: Dictionary
 @export var lifetime_enabled: bool = true
 
 @export var base_materials := {
-	FigureEnums.Style.SOLID: preload("res://figures/shaders/SDFSolidMaterial.tres"),
-	FigureEnums.Style.GRADIENT: preload("res://figures/shaders/SDFGradientMaterial.tres"),
-	FigureEnums.Style.OUTLINE: preload("res://figures/shaders/SDFOutlineMaterial.tres"),
-	FigureEnums.Style.OUTLINE_GRADIENT: preload("res://figures/shaders/SDFOutline_GradientMaterial.tres"),
+	FigureEnums.Style.SOLID: preload("res://resources/shader_materials/bokeh/SDFSolidMaterial.tres"),
+	FigureEnums.Style.GRADIENT: preload("res://resources/shader_materials/bokeh/SDFGradientMaterial.tres"),
+	FigureEnums.Style.OUTLINE: preload("res://resources/shader_materials/bokeh/SDFOutlineMaterial.tres"),
+	FigureEnums.Style.OUTLINE_GRADIENT: preload("res://resources/shader_materials/bokeh/SDFOutline_GradientMaterial.tres"),
 }
 
 @export var figure_personalities := {
-	FigureEnums.PersonalityType.STATIC: preload("res://script/figures/personalities/personality_setup.gd"),
-	FigureEnums.PersonalityType.BOUNCE: preload("res://script/figures/personalities/bounce.gd"),
-	FigureEnums.PersonalityType.BLINK: preload("res://script/figures/personalities/blink.gd"),
-	FigureEnums.PersonalityType.VIBRATION: preload("res://script/figures/personalities/vibration.gd"),
-	FigureEnums.PersonalityType.COLOR_SHIFT: preload("res://script/figures/personalities/color_shift.gd"),
+	FigureEnums.PersonalityType.STATIC: preload("res://script/bokeh/personalities/personality_setup.gd"),
+	FigureEnums.PersonalityType.BOUNCE: preload("res://script/bokeh/personalities/bounce.gd"),
+	FigureEnums.PersonalityType.BLINK: preload("res://script/bokeh/personalities/blink.gd"),
+	FigureEnums.PersonalityType.VIBRATION: preload("res://script/bokeh/personalities/vibration.gd"),
+	FigureEnums.PersonalityType.COLOR_SHIFT: preload("res://script/bokeh/personalities/color_shift.gd"),
 }
 
 var shader_material: ShaderMaterial
 var personality: FigurePersonality
 
-## Blur is symmetric: as soft when Near as when Far — only Mid is sharp.
 const DEPTH_VISUALS := {
 	FigureEnums.Depth.NEAR: {"smoothness": 0.3,  "alpha": 1.0,  "scale_mult": 1.5, "z_index_range": Vector2i(17, 24), "energy_mult": 0.3, "mesh_mult": 1.6},
 	FigureEnums.Depth.MID:  {"smoothness": 0.02, "alpha": 0.75, "scale_mult": 1.0, "z_index_range": Vector2i(9, 16), "energy_mult": 1.1, "mesh_mult": 1.0},
@@ -44,14 +43,10 @@ const PARTICLE_VELOCITY_SIZE_MULT_MAX := 2.2
 const PARTICLE_VELOCITY_QUALITY_MULT_MAX := 1.3
 const PARTICLE_AMOUNT_QUALITY_MULT_MAX := 1.4
 
-## ⚠️ Rango de tamaño→integridad, propuesta sin confirmar.
-const INTEGRIDAD_BASE := 60.0
-const INTEGRIDAD_SIZE_MULT_MIN := 0.7
-const INTEGRIDAD_SIZE_MULT_MAX := 1.3
+const INTEGRITY_BASE := 60.0
+const INTEGRITY_SIZE_MULT_MIN := 0.7
+const INTEGRITY_SIZE_MULT_MAX := 1.3
 
-## Poder ofensivo contra Vignette. 30/7 es el valor confirmado para Mid;
-## Near y Far golpean menos por estar fuera de foco — multiplicadores ⚠️
-## propuestos, sin confirmar.
 const POWER_BASE := 30.0 / 7.0
 const POWER_BY_DEPTH := {
 	FigureEnums.Depth.NEAR: 0.5,
@@ -59,13 +54,9 @@ const POWER_BY_DEPTH := {
 	FigureEnums.Depth.FAR: 0.4,
 }
 
-## 5 ticks a 70bpm, convertidos a segundos porque Figure no corre su propio
-## reloj de combate — solo recuerda cuánto hace que algo lo golpeó.
 const REGEN_TIME_REQUIRED := 5.0 * (60.0 / 70.0)
-const REGEN_RATE := 2.5  # /seg — menor que el daño recibido, según acordamos
+const REGEN_RATE := 2.5  
 
-## ⚠️ Límites de cuánto se encoge/oscurece por daño, sin confirmar. Nunca
-## llegan a 0 — eso lo decide disappear_fast(), no este ajuste visual.
 const DAMAGE_SCALE_MIN := 0.6
 const DAMAGE_DIM_MIN := 0.35
 
@@ -83,22 +74,15 @@ var _depth_timer := 0.0
 var _has_drifted := false
 var _has_appeared := false
 
-## Estado de integridad y daño.
-var integridad: float
-var max_integridad: float
+var integrity: float
+var max_integrity: float
 var _time_since_hit := 0.0
-var _damage_ratio := 0.0  # 0 = integridad completa, 1 = a punto de desaparecer
+var _damage_ratio := 0.0
 
-## Línea base que pone la profundidad, separada del ajuste por daño — nunca
-## se pisan entre sí, siempre se combinan en _update_combined_visuals().
 var _depth_scale_mult := 1.0
 var _depth_modulate := Color.WHITE
 var _depth_light_color := Color.WHITE
 
-
-## Stores incoming spawn data only. Runs before this node enters the tree
-## (FigureManager calls it before add_child), so it must not touch any
-## child node here — all node setup happens in _ready().
 func init(params: Dictionary) -> void:
 	global_params = params
 	_base_color_a = params.color_a
@@ -109,9 +93,9 @@ func init(params: Dictionary) -> void:
 	_depth_hold = params.get("depth_hold", 2.0)
 	_depth_drift_duration = params.get("depth_drift_duration", 4.0)
 
-	var size_mult = lerp(INTEGRIDAD_SIZE_MULT_MIN, INTEGRIDAD_SIZE_MULT_MAX, _size / _max_size)
-	max_integridad = INTEGRIDAD_BASE * size_mult
-	integridad = max_integridad
+	var size_mult = lerp(INTEGRITY_SIZE_MULT_MIN, INTEGRITY_SIZE_MULT_MAX, _size / _max_size)
+	max_integrity = INTEGRITY_BASE * size_mult
+	integrity = max_integrity
 
 
 func _ready() -> void:
@@ -130,7 +114,6 @@ func _ready() -> void:
 
 
 ## Shape/material/mesh setup. Identity color is set ONCE here and never
-## touched again — depth transitions only ever affect modulate from here on.
 func _setup_shader(params: Dictionary) -> void:
 	var style: FigureEnums.Style = params.style
 	if not base_materials.has(style):
@@ -157,15 +140,6 @@ func disable_lifetime() -> void:
 	lifetime_enabled = false
 	lifetime_timer.stop()
 
-
-## Applies the visuals for one depth state — brightness/alpha (modulate),
-## blur, scale, mesh size and light color. Never color_a/color_b.
-## duration = 0.0  → instant (used at birth)
-## duration > 0.0  → animates toward that state (used when drifting)
-##
-## A diferencia de la versión anterior, esto ya NO escribe scale/modulate/
-## point_light.color directamente — guarda la línea base de profundidad y
-## deja que _update_combined_visuals() la mezcle con el daño actual.
 func _apply_depth_visuals(depth: FigureEnums.Depth, duration: float) -> void:
 	var v: Dictionary = DEPTH_VISUALS[depth]
 	_current_depth = depth
@@ -210,10 +184,6 @@ func _apply_depth_visuals(depth: FigureEnums.Depth, duration: float) -> void:
 		_update_combined_visuals()
 	, 0.0, 1.0, duration)
 
-
-## Único punto que de verdad escribe scale/modulate/point_light.color —
-## combina la línea base de profundidad con el ajuste por daño, para que
-## ninguno de los dos sistemas pise al otro.
 func _update_combined_visuals() -> void:
 	var damage_scale = lerp(1.0, DAMAGE_SCALE_MIN, _damage_ratio)
 	scale = Vector2.ONE * _depth_scale_mult * damage_scale
@@ -232,9 +202,9 @@ func _update_combined_visuals() -> void:
 
 func _process(delta: float) -> void:
 	_time_since_hit += delta
-	if _time_since_hit >= REGEN_TIME_REQUIRED and integridad < max_integridad:
-		integridad = min(max_integridad, integridad + REGEN_RATE * delta)
-		_damage_ratio = 1.0 - (integridad / max_integridad)
+	if _time_since_hit >= REGEN_TIME_REQUIRED and integrity < max_integrity:
+		integrity = min(max_integrity, integrity + REGEN_RATE * delta)
+		_damage_ratio = 1.0 - (integrity / max_integrity)
 		_update_combined_visuals()
 
 	if not _has_appeared or _has_drifted:
@@ -248,22 +218,17 @@ func _process(delta: float) -> void:
 		else:
 			_apply_depth_visuals(_depth_target, _depth_drift_duration)
 
-
-## Llamado por Vignette.gd — ver nota de arquitectura en vignette.gd:
-## Vignette resuelve el combate, Figure solo recibe y reacciona.
 func take_damage(amount: float) -> void:
 	if amount <= 0.0:
 		return
-	integridad -= amount
+	integrity -= amount
 	_time_since_hit = 0.0
-	_damage_ratio = clamp(1.0 - (integridad / max_integridad), 0.0, 1.0)
+	_damage_ratio = clamp(1.0 - (integrity / max_integrity), 0.0, 1.0)
 	_update_combined_visuals()
-	if integridad <= 0.0:
+	if integrity <= 0.0:
 		disappear_fast()
 
 
-## Poder actual contra Vignette — depende de la profundidad en la que este
-## Bokeh está ahora mismo, no de su tamaño ni personalidad.
 func get_power() -> float:
 	return POWER_BASE * POWER_BY_DEPTH.get(_current_depth, 1.0)
 
@@ -283,9 +248,6 @@ func _play_settle_pulse() -> void:
 	light_tween.tween_property(point_light, "energy", base_light_energy, 0.3)
 
 
-## Entrance animation. _has_appeared only flips once this finishes, which
-## gates when the depth-drift clock in _process() is allowed to start —
-## otherwise a figure could drift to Near/Far while still scaling in.
 func appear() -> void:
 	scale = Vector2.ZERO
 	modulate.a = 0.0
@@ -306,9 +268,6 @@ func appear() -> void:
 	pop_particles.emitting = true
 
 
-## Velocity scales with figure size so the burst can outrun the mesh
-## while it's still growing — otherwise large figures swallow their own
-## particles before they clear the body. Quality adds extra punch on top.
 func _configure_particles() -> void:
 	var normalized_size = _size / _max_size
 	var quality = global_params.get("quality", 0.0)

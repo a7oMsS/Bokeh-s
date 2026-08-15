@@ -1,7 +1,7 @@
 extends Control
 class_name StartScreen
 
-const WORLD_1_SCENE := "res://scenes/core/world_1.tscn"
+const WORLD_1_SCENE := "res://scenes/core/worlds/world_1.tscn"
 const PROLOGUE_SCENE := "res://scenes/core/prologue.tscn"
 
 

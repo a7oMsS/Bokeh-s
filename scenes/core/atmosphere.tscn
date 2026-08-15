@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://dy4flipw1ji5u"]
 
 [ext_resource type="Script" uid="uid://c7otjl2djk4nf" path="res://script/managers/world_awakening.gd" id="1_2qa6a"]
-[ext_resource type="Shader" uid="uid://c2735twf0cu4u" path="res://figures/shaders/fog.gdshader" id="4_2qa6a"]
+[ext_resource type="Shader" uid="uid://c2735twf0cu4u" path="res://resources/shaders/effects/fog.gdshader" id="4_2qa6a"]
 [ext_resource type="Texture2D" uid="uid://lpcyy6qah0v8" path="res://assets/images/basic_particles.png" id="4_jaqbv"]
-[ext_resource type="Shader" uid="uid://dwto5ja28u5ao" path="res://figures/shaders/solid_background.gdshader" id="5_hy7y0"]
+[ext_resource type="Shader" uid="uid://dwto5ja28u5ao" path="res://resources/shaders/effects/solid_background.gdshader" id="5_hy7y0"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sxd8f"]
 shader = ExtResource("5_hy7y0")

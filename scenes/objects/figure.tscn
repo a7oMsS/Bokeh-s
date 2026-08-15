@@ -1,10 +1,10 @@
 [gd_scene format=3 uid="uid://urllosjlbw6j"]
 
-[ext_resource type="Script" uid="uid://buljx64bbuwq2" path="res://script/figures/figure.gd" id="1_a3t0r"]
+[ext_resource type="Script" uid="uid://buljx64bbuwq2" path="res://script/bokeh/figure.gd" id="1_a3t0r"]
 [ext_resource type="Texture2D" uid="uid://lpcyy6qah0v8" path="res://assets/images/basic_particles.png" id="2_24np7"]
-[ext_resource type="Script" uid="uid://dpovtafwt1mph" path="res://script/figures/fall_trail.gd" id="2_vcs5x"]
-[ext_resource type="Material" uid="uid://bau6lwtjuoumf" path="res://figures/shaders/SDFSolidMaterial.tres" id="3_24np7"]
-[ext_resource type="Texture2D" uid="uid://dixsrrlitpelm" path="res://assets/themes/new_gradient_texture_2d.tres" id="4_vcs5x"]
+[ext_resource type="Script" uid="uid://dpovtafwt1mph" path="res://script/bokeh/fall_trail.gd" id="2_vcs5x"]
+[ext_resource type="Material" uid="uid://bau6lwtjuoumf" path="res://resources/shader_materials/bokeh/SDFSolidMaterial.tres" id="3_24np7"]
+[ext_resource type="Texture2D" uid="uid://dixsrrlitpelm" path="res://resources/new_gradient_texture_2d.tres" id="4_vcs5x"]
 
 [sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_a3t0r"]
 blend_mode = 1

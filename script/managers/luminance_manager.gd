@@ -129,8 +129,7 @@ func reset_for_new_world() -> void:
 # Guardado
 # -------------------------------------------------
 func get_save_data() -> Dictionary:
-	return {}
-	#return {"current_luminance": current_luminance, "purified": _purified}
+	return {"current_luminance": current_luminance, "purified": _purified}
 
 
 func load_save_data(data: Dictionary) -> void:

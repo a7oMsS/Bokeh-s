@@ -13,7 +13,7 @@
 [ext_resource type="Script" uid="uid://d1eiotc0vs7ut" path="res://script/managers/shadow_manager.gd" id="10_xh2hw"]
 [ext_resource type="PackedScene" uid="uid://dy4flipw1ji5u" path="res://scenes/core/atmosphere.tscn" id="11_vesmp"]
 [ext_resource type="Texture2D" uid="uid://7w4m6m5sc2ci" path="res://assets/images/grunge_texture.png" id="12_8ixq4"]
-[ext_resource type="Shader" uid="uid://oi1yojbpq1cj" path="res://figures/shaders/vignette.gdshader" id="13_85lqr"]
+[ext_resource type="Shader" uid="uid://oi1yojbpq1cj" path="res://resources/shaders/effects/vignette.gdshader" id="13_85lqr"]
 [ext_resource type="PackedScene" uid="uid://pr1pdr7mkhjq" path="res://scenes/ui/hud.tscn" id="15_85lqr"]
 [ext_resource type="AudioStream" uid="uid://0eind5l8ocuo" path="res://assets/music/peakk.mp3" id="22_7w87d"]
 [ext_resource type="AudioStream" uid="uid://dcreda575n0bc" path="res://assets/music/Bokeh's theme.mp3" id="23_ct3h4"]

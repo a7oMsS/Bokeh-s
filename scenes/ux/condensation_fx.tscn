@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://dyqyxo0hsk50w" path="res://script/ux/condensation_fx.gd" id="1_7dv6w"]
 [ext_resource type="Texture2D" uid="uid://cesxhsc3wqfv2" path="res://assets/images/spark.png" id="2_05858"]
 [ext_resource type="Texture2D" uid="uid://dahk5gte55yxq" path="res://assets/images/condense_2.png" id="3_6yvqr"]
-[ext_resource type="Texture2D" uid="uid://dixsrrlitpelm" path="res://assets/themes/new_gradient_texture_2d.tres" id="4_8jvaw"]
+[ext_resource type="Texture2D" uid="uid://dixsrrlitpelm" path="res://resources/new_gradient_texture_2d.tres" id="4_8jvaw"]
 [ext_resource type="Texture2D" uid="uid://cqcjg4prwnbk1" path="res://assets/images/ring_condense.png" id="5_5uxxv"]
 [ext_resource type="PackedScene" uid="uid://cyg735dbkbw1q" path="res://scenes/ux/trail.tscn" id="6_05858"]
 [ext_resource type="AudioStream" uid="uid://pvlgew012nf3" path="res://assets/sounds/condense_charge.wav" id="7_g4s5m"]

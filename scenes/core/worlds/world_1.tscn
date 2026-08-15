@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://gnngim7spnvb"]
 
-[ext_resource type="PackedScene" uid="uid://lu63m3o008rh" path="res://scenes/core/world_base.tscn" id="1_60ld3"]
+[ext_resource type="PackedScene" uid="uid://lu63m3o008rh" path="res://scenes/core/worlds/world_base.tscn" id="1_60ld3"]
 
 [node name="World" unique_id=1391800518 instance=ExtResource("1_60ld3")]
 

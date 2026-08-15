@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://cfgom8bl65jpj" path="res://script/ui/hud.gd" id="1_gss2c"]
 [ext_resource type="Script" uid="uid://un6gcwra3itw" path="res://script/ui/cursor_visual.gd" id="2_h022r"]
-[ext_resource type="Shader" uid="uid://bwm5qsjtjjb6d" path="res://figures/shaders/skew.gdshader" id="3_4jqwt"]
+[ext_resource type="Shader" uid="uid://bwm5qsjtjjb6d" path="res://resources/shaders/effects/skew.gdshader" id="3_4jqwt"]
 [ext_resource type="Script" uid="uid://dsawxgstfmh1l" path="res://script/ui/luminance_bar.gd" id="4_kicr4"]
 [ext_resource type="Texture2D" uid="uid://drb6606b8qknf" path="res://assets/images/confetti_particle.png" id="5_mj13f"]
 [ext_resource type="Theme" uid="uid://da8clmu3p12hv" path="res://assets/themes/bokehsTheme.tres" id="6_0h1do"]
